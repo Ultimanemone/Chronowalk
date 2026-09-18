@@ -3,11 +3,23 @@
   "WorkspaceRootPath": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|c:\\users\\lotte\\documents\\pg\\gp\\chronowalk\\chronowalk\\assets\\scripts\\data\\levels\\iobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|c:\\users\\lotte\\documents\\pg\\gp\\chronowalk\\chronowalk\\assets\\scripts\\data\\actiontype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\data\\actiontype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|c:\\users\\lotte\\documents\\pg\\gp\\chronowalk\\chronowalk\\assets\\scripts\\data\\leveldata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\data\\leveldata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|c:\\users\\lotte\\documents\\pg\\gp\\chronowalk\\chronowalk\\assets\\scripts\\core\\managers\\stageinputmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\core\\managers\\stageinputmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\assets\\scripts\\data\\levels\\iobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\data\\levels\\iobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|c:\\users\\lotte\\documents\\pg\\gp\\chronowalk\\chronowalk\\assets\\scripts\\data\\levels\\objectdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\assets\\scripts\\data\\levels\\objectdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\data\\levels\\objectdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -29,8 +41,8 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "DockedWidth": 193,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -50,7 +62,46 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ActionType.cs",
+              "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Data\\ActionType.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Data\\ActionType.cs",
+              "ToolTip": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Data\\ActionType.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Data\\ActionType.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-18T07:26:16.234Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "LevelData.cs",
+              "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Data\\LevelData.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Data\\LevelData.cs",
+              "ToolTip": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Data\\LevelData.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Data\\LevelData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-18T07:25:45.64Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "StageInputManager.cs",
+              "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Core\\Managers\\StageInputManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Core\\Managers\\StageInputManager.cs",
+              "ToolTip": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Core\\Managers\\StageInputManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Core\\Managers\\StageInputManager.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA0AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T03:31:41.867Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "ObjectType.cs",
               "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Data\\Levels\\ObjectType.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Data\\Levels\\ObjectType.cs",
@@ -62,7 +113,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "ObjectData.cs",
               "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Data\\Levels\\ObjectData.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Data\\Levels\\ObjectData.cs",
@@ -70,12 +121,11 @@
               "RelativeToolTip": "Assets\\Scripts\\Data\\Levels\\ObjectData.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-09T03:46:25.842Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-09T03:46:25.842Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "IObject.cs",
               "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Data\\Levels\\IObject.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Data\\Levels\\IObject.cs",
@@ -83,12 +133,11 @@
               "RelativeToolTip": "Assets\\Scripts\\Data\\Levels\\IObject.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-09T03:45:25.705Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-09T03:45:25.705Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "GameManager.cs",
               "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Core\\Managers\\GameManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Core\\Managers\\GameManager.cs",
@@ -100,7 +149,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "Bootstrapper.cs",
               "DocumentMoniker": "C:\\Users\\LOTTE\\Documents\\PG\\GP\\Chronowalk\\Chronowalk\\Assets\\Scripts\\Core\\Bootstrapper.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Core\\Bootstrapper.cs",

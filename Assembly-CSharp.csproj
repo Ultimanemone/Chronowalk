@@ -9,7 +9,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <ProjectGuid>{BBA9863C-7C9C-14FD-439A-9F8E88BE6F7D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -61,8 +62,11 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.60f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Data\ActionType.cs" />
+    <Compile Include="Assets\Scripts\Data\LevelData.cs" />
     <Compile Include="Assets\Scripts\Data\Levels\IObject.cs" />
     <Compile Include="Assets\Scripts\Core\Managers\Managers.cs" />
+    <Compile Include="Assets\Scripts\Core\Managers\StageInputManager.cs" />
     <Compile Include="Assets\Scripts\Data\Levels\ObjectType.cs" />
     <Compile Include="Assets\Scripts\Core\Managers\GameManager.cs" />
     <Compile Include="Assets\Scripts\Core\Bootstrapper.cs" />
