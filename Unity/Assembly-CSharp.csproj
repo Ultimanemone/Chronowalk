@@ -62,19 +62,16 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.60f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Core\Stage\Ghost.cs" />
-    <Compile Include="Assets\Scripts\Core\Stage\Player.cs" />
-    <Compile Include="Assets\Scripts\Data\Levels\IObject.cs" />
     <Compile Include="Assets\Scripts\Data\ActionType.cs" />
+    <Compile Include="Assets\Scripts\Data\LevelData.cs" />
+    <Compile Include="Assets\Scripts\Data\Levels\IObject.cs" />
     <Compile Include="Assets\Scripts\Core\Managers\Managers.cs" />
-    <Compile Include="Assets\Scripts\Core\Stage\StageInputManager.cs" />
-    <Compile Include="Assets\Scripts\Data\Direction.cs" />
+    <Compile Include="Assets\Scripts\Core\Managers\StageInputManager.cs" />
     <Compile Include="Assets\Scripts\Data\Levels\ObjectType.cs" />
     <Compile Include="Assets\Scripts\Core\Managers\GameManager.cs" />
     <Compile Include="Assets\Scripts\Core\Bootstrapper.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\Scripts\Data\Levels\ObjectData.cs" />
-    <Compile Include="Assets\Scripts\Data\LevelData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -1258,7 +1255,8 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

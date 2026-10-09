@@ -1,0 +1,46 @@
+\section{Introduction}
+
+\subsection{Project Background}
+
+This project develops a 2.5D puzzle game in Unity. Each level is a room in which the player must complete an objective using a limited number of turns per attempt. The player may move, wait, interact with an object, or end the attempt. When the attempt ends -- because the turn allowance is used, the player is defeated, or the player chooses to stop -- the room returns to its initial state. The completed sequence of actions is retained and replayed by a ghost during the next attempt.
+
+The player and ghosts occupy the same room and can affect its mechanisms. A ghost can, for example, repeat the actions that activate a switch while the current player uses the route that the switch opens. Further attempts can add more action sequences to the puzzle. The player is therefore solving the room across several attempts, rather than relying on a single uninterrupted run.
+
+The project is organized into two phases. Phase 1 covers the core gameplay loop, a playable set of rooms, action recording and replay, reset behaviour, basic objectives and interactions, and a data-driven level workflow. Phase 2 is planned to add further mechanisms and hazards, progression, scoring, presentation improvements, and broader gameplay evaluation. This report describes the Phase 1 design and prototype.
+
+\subsection{Motivation}
+
+In a conventional restart, the player begins again with the same world state and only their own understanding has changed. Here, a restart also turns the previous attempt into an actor. An attempt that did not solve the room can still contribute: its ghost may hold a switch, move an object, or reach a useful position while the player follows a different plan.
+
+This makes the action sequence itself part of the solution. The player must consider what to do now and what they want a future ghost to do. A short turn allowance gives each attempt a clear planning limit, while the room reset makes it possible to revise a plan and try again. The design aims to make experimentation useful by showing the consequences of an attempt in the next one.
+
+\subsection{Project Challenges}
+
+The main challenge is reliable and understandable replay. The game must record player commands and reproduce them consistently, including when an action has a different result in a later attempt. For example, a move that was possible before may be blocked by an object moved by another ghost. The rules for such cases, as well as the order in which players, ghosts, and room mechanisms act, must be defined clearly enough for players to plan around them.
+
+Resetting the room presents a related state-management challenge. Room objects and mechanisms must return to their starting states at the end of an attempt, while the action histories needed by ghosts persist. A full level restart must also be distinguished from ending one attempt, since restarting a level should clear the histories built within it.
+
+The project also needs a practical way to create and revise puzzle rooms. Each level must describe its layout, starting conditions, objectives, turn allowance, and interactive objects in data that the game can load. A basic level-creation workflow is included in the Phase 1 scope so that rooms can be iterated without implementing each one as a separate Unity scene.
+
+\subsection{Project Objectives}
+
+Phase 1 has the following objectives:
+
+\begin{itemize}
+    \item review relevant time-loop, puzzle, and action-replay designs;
+    \item define the gameplay loop, turn phases, reset rules, and system architecture;
+    \item implement player movement, waiting, and interaction, with a turn limit for each attempt;
+    \item record actions and replay completed attempts through ghosts;
+    \item reset room state while preserving the histories required for replay;
+    \item implement basic environmental interactions, objectives, and completion conditions;
+    \item save and load level data in JSON and provide a basic level-creation workflow;
+    \item integrate the systems into a playable prototype and produce a Game Design Document.
+\end{itemize}
+
+The number of attempts is not intended to be capped in the current design; the constraint is the turn allowance within each attempt. More advanced ghost coordination, hazards, hostile creatures, level progression, efficiency scoring, and expanded evaluation are planned for Phase 2.
+
+\subsection{Development Approach}
+
+Development begins by defining the action and reset rules, then implementing movement and interaction. Action recording and ghost replay are built on those rules, followed by room reset and basic mechanisms. Once the loop is in place, a set of rooms can introduce the mechanics gradually and combine them into puzzles that require cooperation across attempts. The JSON level format and creation workflow support iteration on this content.
+
+The remainder of the report reviews related games and design concepts, describes the prototype's architecture and implementation, and presents deployment, evaluation, limitations, and conclusions.

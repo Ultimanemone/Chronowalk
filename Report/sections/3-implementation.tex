@@ -1,0 +1,102 @@
+\section{Implementation}
+
+This chapter describes the proposed architecture and implementation plan for the Phase 1 prototype. The design targets Unity and a turn-based, grid-based 2.5D puzzle game. The game world is presented in three dimensions, while movement and puzzle rules use a two-dimensional grid. This separation keeps the rules discrete and predictable while allowing the scene to use depth, lighting, and animation for presentation. Unless otherwise stated, the systems below describe the intended prototype design rather than completed implementation.
+
+\subsection{Overall Game Architecture}
+
+The prototype is divided into systems with separate responsibilities. The game-flow system manages level entry, attempts, completion, and restart. The turn controller coordinates the player, ghosts, and environment for each turn. Actor controllers produce actions, while world objects implement their own interaction rules. The level system loads and validates level data and constructs the room. The interface presents the current objective, remaining turns, and loop controls.
+
+In Unity, scene objects can provide rendering, animation, and input, while the gameplay state is held in data-oriented runtime objects. This prevents visual effects from determining puzzle outcomes. For example, a player may animate between two grid cells, but the movement system changes the logical grid position according to the turn rules. A simplified dependency flow is:
+
+\begin{center}
+\begin{tabular}{c}
+Input and interface \\ $\downarrow$ \\ Game flow and turn controller \\ $\downarrow$ \\ Actor actions and world interaction rules \\ $\downarrow$ \\ Runtime level state and Unity presentation
+\end{tabular}
+\end{center}
+
+The turn controller is the authority for advancing gameplay. Other systems may request an action or report a result, but they do not independently advance the turn counter. This provides one place to enforce turn limits and the order of events. The level data, current room state, and ghost histories are treated as separate data: level data defines the initial room, room state changes during an attempt, and ghost histories persist between attempts within the same level.
+
+\subsection{Gameplay System}
+
+The main game states are level loading, active attempt, attempt reset, level completion, and level restart. After a level loads, the game starts an attempt with the player at the defined starting cell and the room in its initial state. On each turn, the player chooses one action: move, wait, or interact. Existing ghosts replay the actions recorded during their respective attempts. The environment then resolves mechanisms and hazards before the game advances to the next turn.
+
+Each turn is divided into four phases:
+
+\begin{enumerate}
+    \item \textbf{Turn start:} the controller checks the attempt state and prepares one action for each ghost that still has a recorded action, along with the player's next action.
+    \item \textbf{Action:} the player supplies a move, wait, or interaction command. Ghost commands are read from their action histories for the same turn index.
+    \item \textbf{Results:} actions are resolved, then mechanisms and hazards respond to the updated room. The game checks for player defeat and level completion.
+    \item \textbf{Turn end:} the player's command is added to the current history, the turn counter advances, and the controller checks the turn limit.
+\end{enumerate}
+
+The turn limit applies to normal player actions. Ending an attempt early is a loop-control command and does not need to consume an additional turn. An attempt ends when the player chooses to end it, reaches the turn limit, or is defeated. The action history up to that point is kept as a ghost history, after which the room resets for the next attempt. Completing the level instead enters the completion state. Restarting the level clears all ghost histories created in that level and reloads its initial state.
+
+\subsection{Action Recording System}
+
+The action recorder stores one command per player turn. A command contains an action type and only the data needed to describe the player's intent. For example, a move stores a direction, while an interaction stores the stable identifier of its target. The recorder does not need to store rendered positions or animation frames: these are presentation details and can be reproduced from the logical action results.
+
+An action history is an ordered sequence indexed from the first turn of an attempt. At the end of an attempt, the sequence is copied into the level's ghost-history collection. Histories are retained across ordinary attempt resets and removed when the player deletes the newest ghost or restarts the level. The current attempt has its own temporary history, which is committed as a ghost when that attempt ends. This distinction avoids modifying an existing ghost while the current player is acting.
+
+Recording commands rather than outcomes allows a ghost to respond to the current room according to the normal rules. A command that succeeded during the original attempt may fail during replay if an object now blocks the way. The game should show this result clearly, while keeping the command sequence unchanged. This makes the room state and the action history sufficient to explain replay behaviour.
+
+\subsection{Ghost Replay System}
+
+At the start of each turn, every ghost reads the command at the current turn index from its action history. When a history has no command for that index, the ghost waits for the rest of the attempt. Ghosts therefore replay in parallel with the current player, and a history shorter than the current attempt does not stop the ghost from remaining in the room.
+
+To make the outcome deterministic, actors are processed in a fixed order. The prototype can resolve existing ghosts from oldest to newest and then resolve the current player. Movement and object pushes are resolved first, followed by interactions and environmental effects. A blocked move becomes a no-op; an invalid interaction also has no effect. Ghosts can occupy the same cell as one another and the player, so they do not block actor movement. They can still activate mechanisms. Solid world objects, walls, and closed doors continue to block movement according to their rules.
+
+This resolution policy is intentionally simple for Phase 1. If two actors attempt to push the same object, the earlier actor in the fixed order is resolved first; later actions are checked against the resulting state and may fail. The rule can be revised if playtesting shows that this ordering is difficult to understand, but it must remain explicit and visible in the game feedback.
+
+\subsection{Room Reset and State Management}
+
+The level definition is immutable during play and serves as the source for the initial room state. Runtime state contains changing values such as entity positions, door states, lever states, and hazard activation. At the beginning of a level, the level system instantiates the runtime entities from the definition. At the end of each attempt, it discards or reinitializes that runtime state and creates the room again from the same definition.
+
+Ghost histories are maintained outside the resettable room state. An ordinary attempt reset preserves completed histories, clears the current attempt history and turn counter, and restores all level objects. Deleting the most recent ghost removes its history and then performs the same room reset. A full level restart also clears all histories. Separating these operations gives each reset a clear scope and avoids trying to reverse every object change individually.
+
+\subsection{Puzzle Interaction System}
+
+Each interactive object responds to a small set of gameplay events through defined rules. A box may be pushed into an unoccupied cell, a door may block movement while closed, and a lever may change the state of one or more connected objects. The level data defines object properties and links, while shared interaction logic resolves whether an action is valid. Stable object identifiers are used for references such as a lever controlling a door.
+
+The initial implementation should support movement, waiting, direct interaction, boxes, switches or levers, and doors. Additional planned objects include lasers, turrets, crevices, traps, mirrors, and conveyors. These can be added as separate object behaviours while using the same turn phases. For example, a laser checks its line after movement and mechanism updates; a mirror changes the beam direction; and a conveyor requests movement for entities on its cells. Hazards should be evaluated in a consistent order so that the same room state and commands always give the same outcome.
+
+The game should provide feedback when an action changes the room or fails. Examples include a door opening, a box being blocked, or a ghost attempting to interact with a missing or inactive target. This feedback is essential to the puzzle design because the player needs to understand which part of a replay affected the current attempt.
+
+\subsection{Level Data and Level Loading}
+
+Levels are stored as JSON files so that puzzle content can be changed without changing gameplay code. A level definition contains a format version, identifier, display name, grid dimensions, turn allowance, player starting position, exit or completion rule, tile layout, and interactive entities. The coordinate system uses integer grid positions. The Unity scene maps those positions to world coordinates for rendering.
+
+The following fragment illustrates the intended form of a level file:
+
+\begin{verbatim}
+{
+  "version": 1,
+  "id": "room_01",
+  "size": { "width": 8, "height": 6 },
+  "turnLimit": 12,
+  "playerStart": { "x": 1, "y": 4 },
+  "completion": { "type": "reachExit", "x": 7, "y": 1 },
+  "objects": [
+    { "id": "box_a", "type": "box", "x": 2, "y": 4 },
+    { "id": "lever_a", "type": "lever", "x": 4, "y": 2,
+      "controls": ["door_a"] },
+    { "id": "door_a", "type": "door", "x": 6, "y": 2,
+      "initialState": "closed" }
+  ]
+}
+\end{verbatim}
+
+The loader reads the file, checks that its version is supported, and validates required fields before constructing the room. Validation should reject invalid dimensions, coordinates outside the grid, duplicate identifiers, missing references, and missing required elements such as a player start or completion condition. If validation fails, the game should report the level identifier and the specific data error to help the designer correct the file. A successful load creates the board, places tiles and objects, saves the initial-state definition for resets, and starts the first attempt.
+
+\subsection{Level Creation Tool}
+
+The Phase 1 level-creation workflow is intended primarily for development and testing. A basic grid editor can be implemented as a Unity editor tool. It should allow a designer to set the grid dimensions and turn limit, place tiles and objects, set the player start and exit, edit object properties, and save or load the level as JSON. A validation command should identify missing or conflicting data before the level is played.
+
+The first version does not require a polished public-facing editor. Its main purpose is to shorten the iteration cycle between changing a room and testing its puzzle. The editor and runtime loader should use the same level format and validation rules so that a level accepted by the editor can be loaded by the game. In the absence of an editor interface, the JSON format also permits levels to be created or revised directly as text files.
+
+\subsection{Puzzle and Level Design}
+
+Levels should introduce one rule at a time before combining rules. Early rooms can teach movement, the turn allowance, and the effect of an attempt becoming a ghost. Subsequent rooms can require a ghost to activate a switch while the player moves through a door, then introduce movable boxes and environmental hazards. Later rooms can combine several histories and mechanisms, requiring the player to plan both the current attempt and the actions that future ghosts will repeat.
+
+Each room should make its objective and relevant mechanisms readable. The player needs to see how many turns remain, which ghosts are active, and which mechanisms changed during replay. Optional performance measures, such as the number of attempts or total actions, can be added after the core puzzle rules are stable. The current design does not cap the number of attempts; the per-attempt turn limit supplies the primary constraint.
+
+The level set should be evaluated for both puzzle solvability and replay clarity. A room may be technically solvable but frustrating if the player cannot infer why a ghost's action failed or how a mechanism changed. Iteration should therefore check that mechanics are introduced gradually, failed actions are communicated, and each additional ghost contributes a discernible effect to the solution.

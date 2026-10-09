@@ -1,0 +1,68 @@
+2. Braid
+Core mechanic:
+In Braid, the player can rewind time. However, the important design idea isn't simply that rewind lets the player correct mistakes.
+Time itself becomes one of the puzzle-solving tools.
+Some objects obey the normal rewind rule while others behave differently. Consequently, the player has to understand the relationship between:
+
+player position
+object state
+enemy state
+time
+reversibility
+irreversible/exception objects
+
+Academic analysis of Braid similarly describes its puzzles as having both spatial and temporal dimensions: solving some puzzles requires navigating through physical space while simultaneously manipulating time.
+
+Jonathan Blow's GDC presentation is also particularly useful for your technical research because it discusses how Braid's rewind had to reproduce the game state accurately and support long periods of rewind.
+
+3. The Sexy Brutale — the timeline as a predictable system
+This is probably the closest of the intended "observe → reset → plan → execute" gameplay loop.
+
+In The Sexy Brutale, the player explores a mansion where events happen according to a repeating schedule. The player gradually discovers what different characters do and when events occur, then uses that knowledge to interfere with the predetermined sequence. The developers described the mansion as a synchronized system where events happen at specific times throughout the house.
+
+The important design principle
+The player isn't primarily becoming stronger.
+They are becoming more informed.
+
+Initially:
+"Why did this character die?"
+
+After observation:
+"The murder happens at 3:45."
+
+After another loop:
+"The killer enters from this room."
+
+After experimentation:
+"If I activate this mechanism before 3:45, the victim survives."
+
+Eventually:
+"I already understand the sequence. I can execute the solution."
+
+4. Twelve Minutes — accumulated knowledge
+Twelve Minutes is particularly useful for your research justification.
+Luis Antonio explicitly described the original concept as an exploration of "accumulated knowledge" as a gameplay mechanic.
+
+The important distinction is:
+
+The character resets.
+The world resets.
+The player's knowledge does not reset.
+
+That produces:
+
+Attempt 1
+     ↓
+Observation
+     ↓
+Knowledge
+     ↓
+Attempt 2
+     ↓
+New observation
+     ↓
+More knowledge
+     ↓
+Attempt 3
+     ↓
+Better plan
