@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace ChronowalkGame.Core
-{
+{   
     public static class Bootstrapper
     {
         private const string bootstrapSceneName = "Bootstrap";

@@ -1,15 +1,12 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace ChronowalkGame.Core.Managers
+namespace ChronowalkGame.Core.Stage
 {
     public class StageInputManager : MonoBehaviour
     {
-        void Start()
-        {
-
-        }
-
         private void Update()
         {
             if (Keyboard.current.wKey.wasPressedThisFrame)
