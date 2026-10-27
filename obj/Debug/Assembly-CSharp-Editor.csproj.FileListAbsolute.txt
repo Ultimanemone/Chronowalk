@@ -1,0 +1,8 @@
+E:\ChronoProject\obj\Debug\Assembly-CSharp-Editor.csproj.AssemblyReference.cache
+E:\ChronoProject\obj\Debug\Assembly-CSharp-Editor.csproj.CoreCompileInputs.cache
+E:\ChronoProject\Temp\bin\Debug\Assembly-CSharp-Editor.dll
+E:\ChronoProject\Temp\bin\Debug\Assembly-CSharp-Editor.pdb
+E:\ChronoProject\Temp\bin\Debug\Assembly-CSharp.pdb
+E:\ChronoProject\obj\Debug\Assembly.1F1299F3.Up2Date
+E:\ChronoProject\obj\Debug\Assembly-CSharp-Editor.dll
+E:\ChronoProject\obj\Debug\Assembly-CSharp-Editor.pdb

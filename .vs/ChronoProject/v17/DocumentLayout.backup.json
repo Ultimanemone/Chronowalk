@@ -1,0 +1,161 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\ChronoProject\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|e:\\chronoproject\\assets\\scripts\\game\\stage\\stagemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\stage\\stagemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|E:\\ChronoProject\\assets\\scripts\\game\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|E:\\ChronoProject\\assets\\scripts\\game\\player\\actiontype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\player\\actiontype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|E:\\ChronoProject\\assets\\scripts\\game\\stage\\stageinputmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\stage\\stageinputmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|E:\\ChronoProject\\assets\\scripts\\game\\stage\\objectdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\stage\\objectdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|E:\\ChronoProject\\assets\\scripts\\game\\stage\\leveldata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\stage\\leveldata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|E:\\ChronoProject\\assets\\scripts\\game\\stage\\gridmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{57197D1A-C668-BF0F-F5A4-EE585B32A294}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\stage\\gridmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Player.cs",
+              "DocumentMoniker": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Player\\Player.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\Player\\Player.cs",
+              "ToolTip": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Player\\Player.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Game\\Player\\Player.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwBQAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-09T13:07:40.88Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "GridManager.cs",
+              "DocumentMoniker": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\GridManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\Stage\\GridManager.cs",
+              "ToolTip": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\GridManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Game\\Stage\\GridManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-09T12:54:06.155Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "StageManager.cs",
+              "DocumentMoniker": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\StageManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\Stage\\StageManager.cs",
+              "ToolTip": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\StageManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Game\\Stage\\StageManager.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAADgvysAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-16T10:04:37.45Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StageInputManager.cs",
+              "DocumentMoniker": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\StageInputManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\Stage\\StageInputManager.cs",
+              "ToolTip": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\StageInputManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Game\\Stage\\StageInputManager.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAowC4AAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-09T13:11:41.849Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ActionType.cs",
+              "DocumentMoniker": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Player\\ActionType.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\Player\\ActionType.cs",
+              "ToolTip": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Player\\ActionType.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Game\\Player\\ActionType.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-09T13:03:59.974Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ObjectData.cs",
+              "DocumentMoniker": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\ObjectData.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\Stage\\ObjectData.cs",
+              "ToolTip": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\ObjectData.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Game\\Stage\\ObjectData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-09T13:11:14.459Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "LevelData.cs",
+              "DocumentMoniker": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\LevelData.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\Stage\\LevelData.cs",
+              "ToolTip": "E:\\ChronoProject\\Assets\\Scripts\\Game\\Stage\\LevelData.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Game\\Stage\\LevelData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-09T13:11:12.35Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 184,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

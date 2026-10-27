@@ -1,0 +1,6 @@
+E:\ChronoProject\Temp\bin\Debug\Assembly-CSharp.dll
+E:\ChronoProject\Temp\bin\Debug\Assembly-CSharp.pdb
+E:\ChronoProject\obj\Debug\Assembly-CSharp.csproj.AssemblyReference.cache
+E:\ChronoProject\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
+E:\ChronoProject\obj\Debug\Assembly-CSharp.dll
+E:\ChronoProject\obj\Debug\Assembly-CSharp.pdb

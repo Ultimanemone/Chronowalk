@@ -12,6 +12,12 @@
 - a turn has 3 phases: turn start, action, results, turn end
 - - player input their action during the action phase
 - - the result phase is where interactions or certain objects will react accordingly to the player's actions in the previous phase
+- - each accepted move, wait, or interact is one turn; blocked moves still consume a turn
+- - completed loops replay in creation order before the current player's action, then room turn systems resolve
+- - ending a loop is a control action, not a replayed or counted turn
+- - completed action sequences are stored per loop; death, manual end, or reaching the turn limit commits the sequence and resets the room
+- - room resets restore saved transforms and active states; mutable object scripts implement IRoomStateful to restore their own state
+- - loop history can be erased one loop at a time or cleared by restarting the level
 - current object/tiles ideas:
 - - wall: blocks player, objects and projectiles
 - - box: can be pushed, breaks after being shot 
