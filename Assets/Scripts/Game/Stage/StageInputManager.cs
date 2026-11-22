@@ -1,4 +1,5 @@
 using ChronowalkGame.Game.PlayerEntities;
+using ChronowalkGame.Utils.Logger;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -41,16 +42,18 @@ namespace ChronowalkGame.Game.Stage
             if (WasPressed(restartLoopKey) || (keyboard != null && keyboard.rKey.wasPressedThisFrame))
             {
                 stage.RestartCurrentLoop();
+                AdvLogger.Log("RESTARTING LOOP");
                 return;
             }
 
-            if (WasPressed(eraseLoopKey) || (keyboard != null && keyboard.backspaceKey.wasPressedThisFrame))
+            if (WasPressed(eraseLoopKey) || (keyboard != null && keyboard.dKey.wasPressedThisFrame))
             {
                 stage.RemoveMostRecentLoop();
+                AdvLogger.Log("REMOVING LOOP");
                 return;
             }
 
-            if (WasPressed(endLoopKey) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame))
+            if (WasPressed(endLoopKey) || (keyboard != null && keyboard.eKey.wasPressedThisFrame))
             {
                 stage.EndCurrentLoop();
                 return;

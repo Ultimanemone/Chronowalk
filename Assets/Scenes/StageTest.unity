@@ -354,10 +354,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChronowalkGame.Game.Stage.StageInputManager
   moveKeys: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  waitKey: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  interactKey: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  endLoopKey: {fileID: 0}
-  eraseLoopKey: {fileID: 0}
+  waitKey: {fileID: -2111612725595033058, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  interactKey: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  endLoopKey: {fileID: 326438735423913909, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  eraseLoopKey: {fileID: 4681016733483578109, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  restartLoopKey: {fileID: -7053052166777500512, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  restartLevelKey: {fileID: 5969005564057528418, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!4 &486813321
 Transform:
   m_ObjectHideFlags: 0
@@ -366,12 +368,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 486813319}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1435322900}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &622915018
 GameObject:
@@ -415,7 +417,6 @@ GameObject:
   - component: {fileID: 894886762}
   - component: {fileID: 894886765}
   - component: {fileID: 894886764}
-  - component: {fileID: 894886763}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -433,32 +434,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1575056543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &894886763
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 894886761}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &894886764
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -526,7 +506,6 @@ GameObject:
   m_Component:
   - component: {fileID: 911188034}
   - component: {fileID: 911188033}
-  - component: {fileID: 1823456789}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -546,22 +525,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb9d72b919240fe4da86359bf73cb1e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChronowalkGame.Game.Stage.GridManager
---- !u!114 &1823456789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 911188032}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4830dc5813cdf6945a70303427651b24, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChronowalkGame.Game.Stage.StageManager
-  levelData: {fileID: 11400000, guid: c5cbf83213bb4e15a37d35e8e6f2c501, type: 2}
-  gridManager: {fileID: 911188033}
-  player: {fileID: 1575056542}
-  ghostPrefab: {fileID: 0}
 --- !u!4 &911188034
 Transform:
   m_ObjectHideFlags: 0
@@ -570,11 +533,45 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 911188032}
   serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -2.93631, y: -1.27637, z: -0.25364}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1435322900}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1435322899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1435322900}
+  m_Layer: 0
+  m_Name: Managers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1435322900
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435322899}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 486813321}
+  - {fileID: 911188034}
+  - {fileID: 1751568856}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1575056541
@@ -606,6 +603,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bdd0b6e00b135146bf832e30dfc1d9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChronowalkGame.Game.PlayerEntities.Player
+  facing: 0
 --- !u!4 &1575056543
 Transform:
   m_ObjectHideFlags: 0
@@ -622,6 +620,54 @@ Transform:
   - {fileID: 894886762}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1751568855
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1751568856}
+  - component: {fileID: 1751568857}
+  m_Layer: 0
+  m_Name: StageManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1751568856
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1751568855}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1435322900}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1751568857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1751568855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4830dc5813cdf6945a70303427651b24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChronowalkGame.Game.Stage.StageManager
+  levelData: {fileID: 11400000, guid: c5cbf83213bb4e15a37d35e8e6f2c501, type: 2}
+  gridManager: {fileID: 911188033}
+  player: {fileID: 1575056542}
+  ghostPrefab: {fileID: 622206497576730178, guid: 21fe41698d5b9aa48a46ca4ffe53e94d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -629,6 +675,5 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 622915019}
-  - {fileID: 486813321}
-  - {fileID: 911188034}
   - {fileID: 1575056543}
+  - {fileID: 1435322900}

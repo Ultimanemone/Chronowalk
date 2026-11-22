@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b686a654d934ca9a0198ad4be6d1001, type: 3}
+  m_Name: TestPath
+  m_EditorClassIdentifier: Assembly-CSharp::ChronowalkGame.Game.Stage.Tile.Corridor
+  sprite: {fileID: 0}
+  prefab: {fileID: 3298871553716135108, guid: b67f56dd7713e804085f5c10c6108581, type: 3}

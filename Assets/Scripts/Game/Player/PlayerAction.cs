@@ -18,5 +18,10 @@ namespace ChronowalkGame.Game.PlayerEntities
         public bool IsReplayable => Type == ActionType.Move ||
                                     Type == ActionType.Wait ||
                                     Type == ActionType.Interact;
+
+        public override string ToString()
+        {
+            return $"{Type} + {Direction.ToString()}";
+        }
     }
 }

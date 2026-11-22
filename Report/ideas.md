@@ -13,22 +13,28 @@
 - - player input their action during the action phase
 - - the result phase is where interactions or certain objects will react accordingly to the player's actions in the previous phase
 - - each accepted move, wait, or interact is one turn; blocked moves still consume a turn
+- - the stage completes after turn resolution when the living player ends their action on an exit tile
 - - completed loops replay in creation order before the current player's action, then room turn systems resolve
 - - ending a loop is a control action, not a replayed or counted turn
 - - completed action sequences are stored per loop; death, manual end, or reaching the turn limit commits the sequence and resets the room
 - - room resets restore saved transforms and active states; mutable object scripts implement IRoomStateful to restore their own state
+- - tiles and objects are separate placement layers; one object may occupy a tile cell, while duplicate placements within a layer are rejected
+- - each object placement has a CanBePushed setting; walls and closed doors block object movement, while open doors and other allowed tiles can support objects
 - - loop history can be erased one loop at a time or cleared by restarting the level
-- current object/tiles ideas:
+- - editor grid and runtime stage bounds expand to include all placed tiles, including negative coordinates; tile type labels appear in the Scene view
+- tiles:
 - - wall: blocks player, objects and projectiles
-- - box: can be pushed, breaks after being shot 
-- - laser: kills the player when the beam is touched, can be blocked with other objects
-- - turret: if the player or any object moves into or inside their range, shoot at them. kills player in one shot, break boxes in 2 shots, player can hide behind boxes to block
 - - crevice: a tile with lower altitude than normal, can get the player stuck. a box can be pushed into a crevice and walked over
-- - trap: kills player and objects that moves over it
-- - prism/mirror: redirects laser
+- - trap: kills player and objects that moves over it, some traps (holes) can be filled with boxes then walked over
 - - conveyor: moves objects on top of it
 - - door: block players, can be opened by interacting or lever in some cases
+- objects:
+- - box: can be pushed, breaks after being shot by turret, blocks laser
+- - laser: kills the player when the beam is touched, can be blocked with other objects
+- - turret: if the player or any object moves into or inside their range, shoot at them. kills player in one shot, break boxes in 2 shots, player can hide behind boxes to block
+- - prism/mirror: redirects laser
 - - lever: moves conveyors, open doors, rotate prism/mirror, etc.
+- the level editor has separate tile-placement and object-placement modes; objects can be placed over tiles and edited independently
 
 ### Optional Expansions
 - in-game level editor

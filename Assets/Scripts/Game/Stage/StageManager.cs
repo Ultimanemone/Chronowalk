@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
 using ChronowalkGame.Game.PlayerEntities;
-using ChronowalkGame.Game.Stage.Tile;
+using ChronowalkGame.Game.Stage.Contracts;
+using ChronowalkGame.Game.Stage.Data;
+using ChronowalkGame.Game.Stage.Objects.Definitions;
+using ChronowalkGame.Game.Stage.Objects.Runtime;
+using ChronowalkGame.Game.Stage.Tiles.Definitions;
+using ChronowalkGame.Game.Stage.Tiles.Runtime;
 using ChronowalkGame.Utils;
 using UnityEngine;
 
@@ -28,7 +33,7 @@ namespace ChronowalkGame.Game.Stage
         private readonly List<PlayerAction> currentLoopActions = new List<PlayerAction>();
         private readonly List<RoomObjectSnapshot> roomSnapshot = new List<RoomObjectSnapshot>();
         private readonly List<IRoomTurnSystem> turnSystems = new List<IRoomTurnSystem>();
-        private readonly List<GhostPlayback> ghosts = new List<GhostPlayback>();
+        private readonly List<Ghost> ghosts = new List<Ghost>();
 
         private Transform roomRoot;
         private Transform ghostRoot;
@@ -104,8 +109,20 @@ namespace ChronowalkGame.Game.Stage
                 instance.name = $"{placement.Definition.name} ({placement.Position.x}, {placement.Position.y})";
                 instance.transform.SetParent(roomRoot, true);
                 instance.transform.position = gridManager.CellToWorld(placement.Position);
+                if (placement.Definition is RoomObjectDefinition)
+                    instance.transform.position += Vector3.back * 0.1f;
                 instance.transform.rotation = DirectionUtility.ToRotation(placement.Direction);
-                gridManager.SetTile(placement.Position, placement.Definition, instance);
+
+                if (placement.Definition is TileObjectDefinition tileDefinition)
+                {
+                    gridManager.SetTile(placement.Position, tileDefinition, instance);
+                    ConfigureTileRuntime(instance, tileDefinition);
+                }
+                else if (placement.Definition is RoomObjectDefinition objectDefinition)
+                {
+                    gridManager.AddRoomObject(instance);
+                    ConfigureRoomObjectRuntime(instance, objectDefinition, placement.Direction, placement.CanBePushed);
+                }
 
                 foreach (MonoBehaviour behaviour in instance.GetComponentsInChildren<MonoBehaviour>(true))
                 {
@@ -140,12 +157,21 @@ namespace ChronowalkGame.Game.Stage
                 !DirectionUtility.TryGetDirection(action.Direction, out _))
                 return false;
 
+            if (action.Type == ActionType.Move &&
+                !RoomActionResolver.CanMove(action.Direction, player.transform, gridManager))
+                return false;
+
             SetState(StageState.ResolvingTurn);
             loopEndRequested = false;
             pendingLoopEndReason = null;
 
             int turnIndex = turnsUsed;
-            ReplayGhosts(turnIndex);
+            if (!ReplayGhosts(turnIndex))
+            {
+                SetState(StageState.Error);
+                return false;
+            }
+
             currentLoopActions.Add(action);
             player.Act(action);
 
@@ -158,6 +184,13 @@ namespace ChronowalkGame.Game.Stage
 
             if (State == StageState.Completed)
                 return true;
+
+            Vector2Int playerCell = gridManager.WorldToCell(player.transform.position);
+            if (player.IsAlive && gridManager.IsType(TileType.Exit, playerCell))
+            {
+                CompleteLevel();
+                return true;
+            }
 
             if (!loopEndRequested && turnsUsed >= TurnLimit)
             {
@@ -262,43 +295,45 @@ namespace ChronowalkGame.Game.Stage
                 return false;
             }
 
-            if (!IsCellInside(level, level.PlayerStart))
-            {
-                error = $"Player start {level.PlayerStart} is outside the level bounds.";
-                return false;
-            }
-
             if (level.Placements == null)
             {
                 error = "Level placements list is missing.";
                 return false;
             }
 
-            Dictionary<Vector2Int, TileObject> occupiedCells = new Dictionary<Vector2Int, TileObject>();
+            HashSet<Vector2Int> occupiedTileCells = new HashSet<Vector2Int>();
+            HashSet<Vector2Int> occupiedObjectCells = new HashSet<Vector2Int>();
             foreach (ObjectData placement in level.Placements)
             {
                 if (placement == null || placement.Definition == null)
                 {
-                    error = "Every level placement must have a tile definition.";
+                    error = "Every level placement must have a room element definition.";
                     return false;
                 }
 
-                if (!IsCellInside(level, placement.Position))
+                HashSet<Vector2Int> occupiedCells;
+                if (placement.Definition is TileObjectDefinition)
+                    occupiedCells = occupiedTileCells;
+                else if (placement.Definition is RoomObjectDefinition)
+                    occupiedCells = occupiedObjectCells;
+                else
                 {
-                    error = $"Placement at {placement.Position} is outside the level bounds.";
+                    error = $"Unsupported room element definition '{placement.Definition.name}'.";
                     return false;
                 }
 
-                if (occupiedCells.ContainsKey(placement.Position))
+                if (!occupiedCells.Add(placement.Position))
                 {
-                    error = $"More than one tile is placed at {placement.Position}.";
+                    string elementType = placement.Definition is TileObjectDefinition ? "tile" : "object";
+                    error = $"More than one {elementType} is placed at {placement.Position}.";
                     return false;
                 }
-                occupiedCells.Add(placement.Position, placement.Definition);
             }
 
-            if (occupiedCells.TryGetValue(level.PlayerStart, out TileObject spawnTile) &&
-                spawnTile.TileType != TileType.Corridor)
+            if (level.Placements.Exists(placement =>
+                    placement.Definition is TileObjectDefinition tile &&
+                    placement.Position == level.PlayerStart &&
+                    tile.TileType != TileType.Corridor))
             {
                 error = "Player start can overlap only a corridor tile.";
                 return false;
@@ -308,28 +343,65 @@ namespace ChronowalkGame.Game.Stage
             return true;
         }
 
-        private static bool IsCellInside(LevelData level, Vector2Int cell)
-        {
-            return cell.x >= 0 && cell.x < level.Width && cell.y >= 0 && cell.y < level.Height;
-        }
-
-        private GameObject CreateRoomObject(TileObject definition)
+        private GameObject CreateRoomObject(StageElement definition)
         {
             if (definition.Prefab != null)
                 return Instantiate(definition.Prefab);
 
             GameObject instance = new GameObject(definition.name);
-            if (definition.Sprite != null)
-                instance.AddComponent<SpriteRenderer>().sprite = definition.Sprite;
-            else
-                Debug.LogWarning($"Tile definition '{definition.name}' has no prefab or sprite.", definition);
             return instance;
+        }
+
+        private static void ConfigureTileRuntime(GameObject instance, TileObjectDefinition definition)
+        {
+            switch (definition.TileType)
+            {
+                case TileType.Trap:
+                    TrapRuntime trapRuntime = instance.GetComponentInChildren<TrapRuntime>(true);
+                    if (trapRuntime == null)
+                        trapRuntime = instance.AddComponent<TrapRuntime>();
+                    trapRuntime.Configure(((Trap)definition).Behavior);
+                    break;
+                case TileType.Door:
+                    if (instance.GetComponentInChildren<DoorRuntime>(true) == null)
+                        instance.AddComponent<DoorRuntime>();
+                    break;
+            }
+        }
+
+        private void ConfigureRoomObjectRuntime(
+            GameObject instance,
+            RoomObjectDefinition definition,
+            Direction direction,
+            bool canBePushed)
+        {
+            if (definition.ObjectType == RoomObjectType.Box &&
+                instance.GetComponentInChildren<BoxRuntime>(true) == null)
+                instance.AddComponent<BoxRuntime>();
+
+            if (definition.ObjectType == RoomObjectType.Laser &&
+                instance.GetComponentInChildren<LaserRuntime>(true) == null)
+                instance.AddComponent<LaserRuntime>();
+
+            RoomObjectRuntime objectRuntime = instance.GetComponentInChildren<RoomObjectRuntime>(true);
+            if (objectRuntime == null)
+                objectRuntime = instance.AddComponent<RoomObjectRuntime>();
+            objectRuntime.Configure(definition, instance.transform, canBePushed);
+
+            switch (definition.ObjectType)
+            {
+                case RoomObjectType.Box:
+                    instance.GetComponentInChildren<BoxRuntime>(true).Configure(instance.transform);
+                    break;
+                case RoomObjectType.Laser:
+                    instance.GetComponentInChildren<LaserRuntime>(true).Configure(direction);
+                    break;
+            }
         }
 
         private void FinishCurrentLoop(string reason)
         {
-            if (currentLoopActions.Count > 0)
-                completedLoops.Add(new LoopActionLog(currentLoopActions));
+            completedLoops.Add(new LoopActionLog(currentLoopActions));
 
             SetState(StageState.TransitioningLoop);
             LastLoopEndReason = reason;
@@ -370,14 +442,23 @@ namespace ChronowalkGame.Game.Stage
             roomSnapshot.Add(new RoomObjectSnapshot(root));
         }
 
-        private void ReplayGhosts(int turnIndex)
+        private bool ReplayGhosts(int turnIndex)
         {
             for (int i = 0; i < ghosts.Count; i++)
             {
-                IReadOnlyList<PlayerAction> actions = ghosts[i].Log.Actions;
-                if (turnIndex < actions.Count)
-                    ghosts[i].Actor.Replay(actions[turnIndex], gridManager);
+                if (!ghosts[i].IsReadyForTurn(turnIndex))
+                {
+                    Debug.LogError(
+                        $"Ghost for loop {ghosts[i].LoopNumber} was out of sync at turn {turnIndex}.",
+                        ghosts[i]);
+                    return false;
+                }
             }
+
+            for (int i = 0; i < ghosts.Count; i++)
+                ghosts[i].ReplayTurn(turnIndex);
+
+            return true;
         }
 
         private void SpawnGhosts()
@@ -389,7 +470,7 @@ namespace ChronowalkGame.Game.Stage
             ghostRoot = new GameObject("Loop Ghosts").transform;
             ghostRoot.SetParent(transform, false);
 
-            foreach (LoopActionLog log in completedLoops)
+            for (int i = 0; i < completedLoops.Count; i++)
             {
                 GameObject ghostObject;
                 if (ghostPrefab != null)
@@ -405,16 +486,20 @@ namespace ChronowalkGame.Game.Stage
                         Destroy(collider);
                 }
 
-                ghostObject.name = $"Loop Ghost {ghosts.Count + 1}";
+                ghostObject.name = $"Loop Ghost {i + 1}";
                 ghostObject.transform.SetParent(ghostRoot, true);
-                ghostObject.transform.position = gridManager.CellToWorld(levelData.PlayerStart);
-                ghostObject.transform.rotation = DirectionUtility.ToRotation(levelData.PlayerDirection);
 
                 Ghost ghost = ghostObject.GetComponent<Ghost>();
                 if (ghost == null)
                     ghost = ghostObject.AddComponent<Ghost>();
 
-                ghosts.Add(new GhostPlayback(log, ghost));
+                ghost.Initialize(
+                    i + 1,
+                    completedLoops[i],
+                    levelData.PlayerStart,
+                    levelData.PlayerDirection,
+                    gridManager);
+                ghosts.Add(ghost);
             }
         }
 
@@ -449,18 +534,6 @@ namespace ChronowalkGame.Game.Stage
 
             State = nextState;
             StateChanged?.Invoke(this);
-        }
-
-        private sealed class GhostPlayback
-        {
-            public LoopActionLog Log { get; }
-            public Ghost Actor { get; }
-
-            public GhostPlayback(LoopActionLog log, Ghost actor)
-            {
-                Log = log;
-                Actor = actor;
-            }
         }
 
         private sealed class RoomObjectSnapshot

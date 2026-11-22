@@ -5,37 +5,72 @@ namespace ChronowalkGame.Game.PlayerEntities
 {
     public class Ghost : MonoBehaviour
     {
-        public void Replay(PlayerAction action, GridManager grid)
+        private LoopActionLog actionLog;
+        private GridManager grid;
+        private int nextTurnIndex;
+
+        public int LoopNumber { get; private set; }
+        public int TurnsReplayed => nextTurnIndex;
+        public bool IsAlive { get; private set; }
+        public bool HasFinishedActions => actionLog != null && nextTurnIndex >= actionLog.Actions.Count;
+
+        public bool IsReadyForTurn(int turnIndex)
         {
-            if (grid == null || !gameObject.activeSelf)
-                return;
+            return turnIndex == nextTurnIndex;
+        }
 
-            if (action.Type == ActionType.Move &&
-                DirectionUtility.TryGetDirection(action.Direction, out Direction direction))
-            {
-                transform.rotation = DirectionUtility.ToRotation(direction);
-                Vector2Int targetCell = grid.WorldToCell(transform.position) + action.Direction;
-                if (!grid.IsWalkable(targetCell))
-                    return;
+        public void Initialize(
+            int loopNumber,
+            LoopActionLog recordedActions,
+            Vector2Int spawnCell,
+            Direction initialDirection,
+            GridManager stageGrid)
+        {
+            if (recordedActions == null)
+                throw new System.ArgumentNullException(nameof(recordedActions));
+            if (stageGrid == null)
+                throw new System.ArgumentNullException(nameof(stageGrid));
+            if (loopNumber < 1)
+                throw new System.ArgumentOutOfRangeException(nameof(loopNumber));
 
-                transform.position = grid.CellToWorld(targetCell);
-                if (grid.IsHazard(targetCell))
-                    gameObject.SetActive(false);
-            }
-            else if (action.Type == ActionType.Interact &&
-                     DirectionUtility.TryGetDirection(action.Direction, out direction))
-            {
-                transform.rotation = DirectionUtility.ToRotation(direction);
-                Vector2Int targetCell = grid.WorldToCell(transform.position) + action.Direction;
-                if (grid.TryGetRuntimeObject(targetCell, out GameObject target))
-                {
-                    foreach (MonoBehaviour behaviour in target.GetComponentsInChildren<MonoBehaviour>(true))
-                    {
-                        if (behaviour is IRoomInteractable interactable)
-                            interactable.Interact(transform);
-                    }
-                }
-            }
+            LoopNumber = loopNumber;
+            actionLog = recordedActions;
+            grid = stageGrid;
+            nextTurnIndex = 0;
+            IsAlive = true;
+            gameObject.SetActive(true);
+            transform.position = grid.CellToWorld(spawnCell);
+            SetFacing(initialDirection);
+        }
+
+        public bool ReplayTurn(int turnIndex)
+        {
+            if (!IsReadyForTurn(turnIndex))
+                return false;
+
+            nextTurnIndex++;
+            if (!IsAlive || actionLog == null || turnIndex >= actionLog.Actions.Count)
+                return true;
+
+            PlayerAction action = actionLog.Actions[turnIndex];
+            RoomActionResolver.Resolve(
+                action,
+                transform,
+                grid,
+                SetFacing,
+                Die);
+            return true;
+        }
+
+        private void SetFacing(Direction direction)
+        {
+            transform.rotation = DirectionUtility.ToRotation(direction);
+        }
+
+        private void Die()
+        {
+            IsAlive = false;
+            gameObject.SetActive(false);
         }
     }
 }

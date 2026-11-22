@@ -1,4 +1,9 @@
-using ChronowalkGame.Game.Stage.Tile;
+using System.Collections.Generic;
+using ChronowalkGame.Game.Stage.Contracts;
+using ChronowalkGame.Game.Stage.Data;
+using ChronowalkGame.Game.Stage.Objects.Runtime;
+using ChronowalkGame.Game.Stage.Tiles.Definitions;
+using ChronowalkGame.Game.Stage.Tiles.Runtime;
 using ChronowalkGame.Utils;
 using UnityEngine;
 
@@ -6,79 +11,265 @@ namespace ChronowalkGame.Game.Stage
 {
     public class GridManager : MonoSingleton<GridManager>
     {
-        private TileObject[,] tiles;
-        private GameObject[,] runtimeObjects;
+        private Dictionary<Vector2Int, TileObjectDefinition> tiles = new Dictionary<Vector2Int, TileObjectDefinition>();
+        private Dictionary<Vector2Int, GameObject> tileRuntimeObjects = new Dictionary<Vector2Int, GameObject>();
+        private List<GameObject> roomObjects = new List<GameObject>();
         private Vector3 origin;
+        private BoundsInt bounds;
 
-        public int Width => tiles == null ? 0 : tiles.GetLength(0);
-        public int Height => tiles == null ? 0 : tiles.GetLength(1);
+        public int Width => bounds.size.x;
+        public int Height => bounds.size.y;
+        public BoundsInt Bounds => bounds;
 
         public void Initialize(LevelData level)
         {
             if (level == null)
                 throw new System.ArgumentNullException(nameof(level));
 
-            tiles = new TileObject[level.Width, level.Height];
-            runtimeObjects = new GameObject[level.Width, level.Height];
+            bounds = level.GetGridBounds();
+            tiles.Clear();
+            tileRuntimeObjects.Clear();
+            roomObjects.Clear();
             origin = level.Origin;
         }
 
-        public bool SetTile(Vector2Int cell, TileObject tile, GameObject runtimeObject = null)
+        public bool SetTile(Vector2Int cell, TileObjectDefinition tile, GameObject runtimeObject = null)
         {
             if (!IsWithinBounds(cell))
                 return false;
 
-            tiles[cell.x, cell.y] = tile;
-            runtimeObjects[cell.x, cell.y] = runtimeObject;
+            if (tile == null)
+                tiles.Remove(cell);
+            else
+                tiles[cell] = tile;
+
+            if (runtimeObject == null)
+                tileRuntimeObjects.Remove(cell);
+            else
+                tileRuntimeObjects[cell] = runtimeObject;
             return true;
         }
 
-        public bool TryGetTile(Vector2Int cell, out TileObject tile)
+        public bool AddRoomObject(GameObject runtimeObject)
+        {
+            if (runtimeObject == null)
+                return false;
+
+            Vector2Int cell = WorldToCell(runtimeObject.transform.position);
+            if (!IsWithinBounds(cell))
+                return false;
+
+            roomObjects.Add(runtimeObject);
+            return true;
+        }
+
+        public bool TryGetTile(Vector2Int cell, out TileObjectDefinition tile)
         {
             tile = null;
             if (!IsWithinBounds(cell))
                 return false;
 
-            tile = tiles[cell.x, cell.y];
-            return tile != null;
-        }
-
-        public bool TryGetRuntimeObject(Vector2Int cell, out GameObject runtimeObject)
-        {
-            runtimeObject = null;
-            if (!IsWithinBounds(cell))
-                return false;
-
-            runtimeObject = runtimeObjects[cell.x, cell.y];
-            return runtimeObject != null;
+            return tiles.TryGetValue(cell, out tile);
         }
 
         public bool IsType(TileType type, Vector2Int cell)
         {
-            return TryGetTile(cell, out TileObject tile) && tile.TileType == type;
+            return TryGetTile(cell, out TileObjectDefinition tile) && tile.TileType == type;
         }
 
-        public bool IsWalkable(Vector2Int cell)
+        public bool IsWalkable(Vector2Int cell, Transform actor = null)
+        {
+            return IsWalkableIgnoringRoomObject(cell, actor) && !TryGetRoomObject(cell, out _);
+        }
+
+        public bool IsWalkableIgnoringRoomObject(Vector2Int cell, Transform actor = null)
         {
             if (!IsWithinBounds(cell))
                 return false;
 
-            if (!TryGetTile(cell, out TileObject tile))
+            bool hasMovementRule = false;
+            if (TryGetTileRuntimeObject(cell, out GameObject tileObject))
+            {
+                foreach (MonoBehaviour behaviour in tileObject.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    if (!(behaviour is IRoomBlocker blocker))
+                        continue;
+
+                    hasMovementRule = true;
+                    if (blocker.BlocksMovement(actor))
+                        return false;
+                }
+            }
+
+            if (hasMovementRule)
                 return true;
 
-            return tile.TileType == TileType.Corridor || tile.TileType == TileType.Trap;
+            if (!TryGetTile(cell, out TileObjectDefinition tile))
+                return true;
+            if (tile.TileType == TileType.Trap &&
+                TryGetTrap(cell, out TrapRuntime trap) &&
+                trap.IsFilled)
+                return true;
+
+            return tile.AllowsActors;
+        }
+
+        public bool TryGetPushable(Vector2Int cell, out IRoomPushable pushable)
+        {
+            pushable = null;
+            return TryGetRoomObject(cell, out RoomObjectRuntime roomObject) &&
+                   (pushable = roomObject) != null;
+        }
+
+        public bool TryGetTrap(Vector2Int cell, out TrapRuntime trap)
+        {
+            trap = null;
+            if (!TryGetTileRuntimeObject(cell, out GameObject runtimeObject))
+                return false;
+
+            trap = runtimeObject.GetComponentInChildren<TrapRuntime>(true);
+            return trap != null;
+        }
+
+        public bool TryGetRuntimeObject(Vector2Int cell, out GameObject runtimeObject)
+        {
+            if (TryGetRoomObject(cell, out RoomObjectRuntime roomObject))
+            {
+                runtimeObject = roomObject.ObjectGameObject;
+                return true;
+            }
+
+            return TryGetTileRuntimeObject(cell, out runtimeObject);
+        }
+
+        public bool TryGetRoomObject(Vector2Int cell, out RoomObjectRuntime roomObject)
+        {
+            roomObject = null;
+            if (!IsWithinBounds(cell))
+                return false;
+
+            for (int i = 0; i < roomObjects.Count; i++)
+            {
+                GameObject candidate = roomObjects[i];
+                if (candidate == null || !candidate.activeInHierarchy ||
+                    WorldToCell(candidate.transform.position) != cell)
+                    continue;
+
+                roomObject = candidate.GetComponentInChildren<RoomObjectRuntime>(true);
+                if (roomObject != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool CanObjectEnter(Vector2Int cell, RoomObjectRuntime movingObject = null)
+        {
+            if (!IsWithinBounds(cell))
+                return false;
+
+            if (TryGetTile(cell, out TileObjectDefinition tile) && !tile.AllowsObjects)
+                return false;
+
+            if (TryGetTileRuntimeObject(cell, out GameObject tileRuntime))
+            {
+                foreach (MonoBehaviour behaviour in tileRuntime.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    if (behaviour is IRoomObjectEntryRule entryRule && !entryRule.AllowsObjectEntry)
+                        return false;
+                }
+            }
+
+            for (int i = 0; i < roomObjects.Count; i++)
+            {
+                GameObject candidate = roomObjects[i];
+                if (candidate == null || !candidate.activeInHierarchy ||
+                    WorldToCell(candidate.transform.position) != cell)
+                    continue;
+
+                RoomObjectRuntime occupant = candidate.GetComponentInChildren<RoomObjectRuntime>(true);
+                if (occupant != null && occupant != movingObject)
+                    return false;
+            }
+
+            return true;
         }
 
         public bool IsHazard(Vector2Int cell)
         {
-            return IsType(TileType.Trap, cell);
+            return TryGetTrap(cell, out TrapRuntime trap) && trap.IsHazard;
+        }
+
+        public bool IsLaserHazard(Vector2Int cell)
+        {
+            foreach (GameObject runtimeObject in roomObjects)
+            {
+                if (runtimeObject == null || !runtimeObject.activeInHierarchy)
+                    continue;
+
+                LaserRuntime laser = runtimeObject.GetComponentInChildren<LaserRuntime>(true);
+                if (laser == null)
+                    continue;
+
+                Vector2Int direction = laser.BeamDirection;
+                if (direction == Vector2Int.zero)
+                    continue;
+
+                Vector2Int beamCell = WorldToCell(runtimeObject.transform.position) + direction;
+                while (IsWithinBounds(beamCell))
+                {
+                    if (BlocksLaser(beamCell))
+                        break;
+
+                    if (beamCell == cell)
+                        return true;
+
+                    beamCell += direction;
+                }
+            }
+
+            return false;
+        }
+
+        private bool BlocksLaser(Vector2Int cell)
+        {
+            if (TryGetTile(cell, out TileObjectDefinition tile) && tile.BlocksLaser)
+                return true;
+
+            if (TryGetTileRuntimeObject(cell, out GameObject tileObject))
+            {
+                foreach (MonoBehaviour behaviour in tileObject.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    if (behaviour is IRoomLaserBlocker laserBlocker && laserBlocker.BlocksLaser)
+                        return true;
+                }
+            }
+
+            if (TryGetRoomObject(cell, out RoomObjectRuntime roomObject) && roomObject.BlocksLaser)
+                return true;
+
+            return false;
+        }
+
+        public bool TryGetTileRuntimeObject(Vector2Int cell, out GameObject runtimeObject)
+        {
+            runtimeObject = null;
+            if (!IsWithinBounds(cell) ||
+                !tileRuntimeObjects.TryGetValue(cell, out GameObject candidate) ||
+                candidate == null ||
+                !candidate.activeInHierarchy ||
+                WorldToCell(candidate.transform.position) != cell)
+                return false;
+
+            runtimeObject = candidate;
+            return true;
         }
 
         public bool IsWithinBounds(Vector2Int cell)
         {
             return tiles != null &&
-                   cell.x >= 0 && cell.x < tiles.GetLength(0) &&
-                   cell.y >= 0 && cell.y < tiles.GetLength(1);
+                   cell.x >= bounds.xMin && cell.x < bounds.xMax &&
+                   cell.y >= bounds.yMin && cell.y < bounds.yMax;
         }
 
         public Vector2Int WorldToCell(Vector3 position)

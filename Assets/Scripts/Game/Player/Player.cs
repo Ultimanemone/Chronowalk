@@ -1,5 +1,7 @@
 using ChronowalkGame.Game.Stage;
+using ChronowalkGame.Game.Stage.Contracts;
 using ChronowalkGame.Utils;
+using ChronowalkGame.Utils.Logger;
 using UnityEngine;
 
 namespace ChronowalkGame.Game.PlayerEntities
@@ -25,8 +27,11 @@ namespace ChronowalkGame.Game.PlayerEntities
                     Interact(action.Direction);
                     break;
                 case ActionType.Wait:
+                    ResolveAction(action);
                     break;
             }
+
+            AdvLogger.Log(action.ToString());
         }
 
         public void Act(ActionType type, Vector2Int direction)
@@ -36,7 +41,7 @@ namespace ChronowalkGame.Game.PlayerEntities
 
         public bool CanMoveTo(Vector2Int cell)
         {
-            return GridManager.Instance != null && GridManager.Instance.IsWalkable(cell);
+            return GridManager.Instance != null && GridManager.Instance.IsWalkable(cell, transform);
         }
 
         public void SetStart(Vector2Int cell, Direction direction)
@@ -75,34 +80,25 @@ namespace ChronowalkGame.Game.PlayerEntities
 
         private void Move(Vector2Int direction)
         {
-            if (!DirectionUtility.TryGetDirection(direction, out Direction newFacing))
-                return;
-
-            SetFacing(newFacing);
-            Vector2Int targetCell = GridManager.Instance.WorldToCell(transform.position) + direction;
-            if (!CanMoveTo(targetCell))
-                return;
-
-            transform.position = GridManager.Instance.CellToWorld(targetCell);
-            if (GridManager.Instance.IsHazard(targetCell))
-                Die();
+            ResolveAction(new PlayerAction(ActionType.Move, direction));
         }
 
         private void Interact(Vector2Int direction)
         {
-            if (!DirectionUtility.TryGetDirection(direction, out Direction newFacing))
+            ResolveAction(new PlayerAction(ActionType.Interact, direction));
+        }
+
+        private void ResolveAction(PlayerAction action)
+        {
+            if (GridManager.Instance == null)
                 return;
 
-            SetFacing(newFacing);
-            Vector2Int targetCell = GridManager.Instance.WorldToCell(transform.position) + direction;
-            if (!GridManager.Instance.TryGetRuntimeObject(targetCell, out GameObject target))
-                return;
-
-            foreach (MonoBehaviour behaviour in target.GetComponentsInChildren<MonoBehaviour>(true))
-            {
-                if (behaviour is IRoomInteractable interactable)
-                    interactable.Interact(transform);
-            }
+            RoomActionResolver.Resolve(
+                action,
+                transform,
+                GridManager.Instance,
+                SetFacing,
+                Die);
         }
 
         private void SetFacing(Direction direction)

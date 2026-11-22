@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b686a654d934ca9a0198ad4be6d1005, type: 3}
+  m_Name: TestHole
+  m_EditorClassIdentifier: Assembly-CSharp::ChronowalkGame.Game.Stage.Tile.Trap
+  sprite: {fileID: 0}
+  prefab: {fileID: 298006452865128011, guid: 314b3068b2f48c64aa024ddb7e486e4a, type: 3}
+  behavior: 1

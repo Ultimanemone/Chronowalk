@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using ChronowalkGame.Game.PlayerEntities;
 using ChronowalkGame.Game.Stage;
-using ChronowalkGame.Game.Stage.Tile;
+using ChronowalkGame.Game.Stage.Data;
+using ChronowalkGame.Game.Stage.Objects.Definitions;
+using ChronowalkGame.Game.Stage.Tiles.Definitions;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,26 +15,53 @@ namespace ChronowalkGame.Editor
         private enum ToolMode
         {
             Place,
-            Select,
-            Erase
+            Select
+        }
+
+        private enum PlacementLayer
+        {
+            Tile,
+            Object
         }
 
         private const string PreviewRootName = "[Chronowalk Level Editor Preview]";
 
         private LevelData level;
-        private TileObject selectedDefinition;
+        private StageElement selectedDefinition;
         private ToolMode toolMode;
+        private PlacementLayer placementLayer;
         private Direction placementDirection;
         private int selectedPlacementIndex = -1;
-        private bool editMode;
+        private bool editMode = true;
         private Vector2 paletteScroll;
+        private Vector2 windowScroll;
+        private string paletteSearch = string.Empty;
         private GameObject previewRoot;
-        private List<TileObject> definitions = new List<TileObject>();
+        private List<StageElement> definitions = new List<StageElement>();
+        private GUIStyle tileLabelStyle;
+        private readonly HashSet<Vector2Int> brushedCells = new HashSet<Vector2Int>();
+        private Vector2Int lastBrushCell;
+        private bool hasLastBrushCell;
+        private int brushUndoGroup;
+        private int brushButton = -1;
+        private bool eraseBrushStroke;
 
         [MenuItem("Chronowalk/Level Editor")]
         private static void Open()
         {
             GetWindow<LevelEditorWindow>("Level Editor");
+        }
+
+        public static void OpenForLevel(LevelData level)
+        {
+            if (level == null)
+                return;
+
+            LevelEditorWindow window = GetWindow<LevelEditorWindow>("Level Editor");
+            window.level = level;
+            window.selectedPlacementIndex = -1;
+            window.RefreshPreview();
+            window.Show();
         }
 
         private void OnEnable()
@@ -60,6 +89,7 @@ namespace ChronowalkGame.Editor
 
         private void OnGUI()
         {
+            windowScroll = EditorGUILayout.BeginScrollView(windowScroll);
             EditorGUILayout.LabelField("Level", EditorStyles.boldLabel);
             EditorGUI.BeginChangeCheck();
             level = (LevelData)EditorGUILayout.ObjectField("Level Data", level, typeof(LevelData), false);
@@ -91,6 +121,7 @@ namespace ChronowalkGame.Editor
             if (level == null)
             {
                 EditorGUILayout.HelpBox("Create a level asset or assign one to begin editing.", MessageType.Info);
+                EditorGUILayout.EndScrollView();
                 return;
             }
 
@@ -98,38 +129,56 @@ namespace ChronowalkGame.Editor
             EditorGUILayout.LabelField("Grid", EditorStyles.boldLabel);
             Undo.RecordObject(level, "Edit Level Grid");
             EditorGUI.BeginChangeCheck();
-            level.Width = Mathf.Max(1, EditorGUILayout.IntField("Width", level.Width));
-            level.Height = Mathf.Max(1, EditorGUILayout.IntField("Height", level.Height));
+            level.Width = Mathf.Max(1, EditorGUILayout.IntField("Minimum Width", level.Width));
+            level.Height = Mathf.Max(1, EditorGUILayout.IntField("Minimum Height", level.Height));
             level.TurnLimit = Mathf.Max(1, EditorGUILayout.IntField("Turn Limit", level.TurnLimit));
             level.Origin = EditorGUILayout.Vector3Field("Origin", level.Origin);
             level.PlayerStart = EditorGUILayout.Vector2IntField("Player Start", level.PlayerStart);
             level.PlayerDirection = (Direction)EditorGUILayout.EnumPopup("Player Facing", level.PlayerDirection);
             if (EditorGUI.EndChangeCheck())
             {
-                ClampPlacements();
-                level.PlayerStart = new Vector2Int(
-                    Mathf.Clamp(level.PlayerStart.x, 0, level.Width - 1),
-                    Mathf.Clamp(level.PlayerStart.y, 0, level.Height - 1));
                 MarkLevelDirty();
                 RefreshPreview();
                 SceneView.RepaintAll();
             }
+            BoundsInt gridBounds = level.GetGridBounds();
+            EditorGUILayout.LabelField(
+                "Current Bounds",
+                $"X {gridBounds.xMin}..{gridBounds.xMax - 1}, Y {gridBounds.yMin}..{gridBounds.yMax - 1} " +
+                $"({gridBounds.size.x} x {gridBounds.size.y})");
 
             EditorGUILayout.Space();
             editMode = EditorGUILayout.ToggleLeft("Edit in Scene View", editMode);
-            toolMode = (ToolMode)GUILayout.Toolbar((int)toolMode, new[] { "Place", "Select", "Erase" });
+            EditorGUI.BeginChangeCheck();
+            placementLayer = (PlacementLayer)GUILayout.Toolbar(
+                (int)placementLayer,
+                new[] { "Tile Placement", "Object Placement" });
+            if (EditorGUI.EndChangeCheck())
+            {
+                EndBrushStroke();
+                selectedDefinition = null;
+                selectedPlacementIndex = -1;
+            }
+
+            toolMode = (ToolMode)GUILayout.Toolbar((int)toolMode, new[] { "Place", "Select" });
             using (new EditorGUI.DisabledScope(toolMode != ToolMode.Place))
                 placementDirection = (Direction)EditorGUILayout.EnumPopup("New Placement Direction", placementDirection);
 
             EditorGUILayout.HelpBox(
-                "With Scene View editing enabled, click a grid cell to use the selected tool. " +
+                "Choose Tile Placement or Object Placement before using the palette. " +
+                "Left click and drag places the selected type in Place mode; right click and drag erases only that layer. " +
+                "Select mode selects placements in the chosen layer. " +
+                "A cell can contain one tile and one object. Object placements can be individually marked pushable. " +
+                "The grid expands to include placements (including negative coordinates). " +
                 "The preview is temporary; save the Level Data asset to keep changes.",
                 MessageType.Info);
-            ObjectData spawnPlacement = level.Placements.Find(
-                placement => placement != null && placement.Position == level.PlayerStart);
+            ObjectData spawnPlacement = level.Placements.Find(placement =>
+                placement != null &&
+                placement.Position == level.PlayerStart &&
+                placement.Definition is TileObjectDefinition);
             if (spawnPlacement != null &&
-                spawnPlacement.Definition != null &&
-                spawnPlacement.Definition.TileType != TileType.Corridor)
+                spawnPlacement.Definition is TileObjectDefinition spawnTile &&
+                spawnTile.TileType != TileType.Corridor)
             {
                 EditorGUILayout.HelpBox(
                     "Player start overlaps a non-corridor tile. The stage loader will reject this level.",
@@ -138,31 +187,50 @@ namespace ChronowalkGame.Editor
 
             DrawPalette();
             DrawSelectedPlacement();
+            EditorGUILayout.EndScrollView();
         }
 
         private void DrawPalette()
         {
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Tile Palette", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(
+                placementLayer == PlacementLayer.Tile ? "Tile Palette" : "Object Palette",
+                EditorStyles.boldLabel);
 
             if (definitions.Count == 0)
             {
-                EditorGUILayout.HelpBox("No tile definition assets found. Create one from Assets > Create > Chronowalk > Tiles.", MessageType.Warning);
+                EditorGUILayout.HelpBox(
+                    "No tile or object definitions found. Create them from Assets > Create > Chronowalk.",
+                    MessageType.Warning);
                 return;
             }
 
-            paletteScroll = EditorGUILayout.BeginScrollView(paletteScroll, GUILayout.Height(160));
-            foreach (TileObject definition in definitions)
+            paletteSearch = EditorGUILayout.TextField("Search", paletteSearch);
+            float listHeight = Mathf.Clamp(position.height - 380f, 100f, 280f);
+            paletteScroll = EditorGUILayout.BeginScrollView(paletteScroll, GUILayout.Height(listHeight));
+            bool foundMatch = false;
+            foreach (StageElement definition in definitions)
             {
-                if (definition == null)
+                bool matchesLayer = placementLayer == PlacementLayer.Tile
+                    ? definition is TileObjectDefinition
+                    : definition is RoomObjectDefinition;
+                if (definition == null ||
+                    !matchesLayer ||
+                    (!string.IsNullOrEmpty(paletteSearch) &&
+                     definition.name.IndexOf(paletteSearch, StringComparison.OrdinalIgnoreCase) < 0))
                     continue;
 
+                foundMatch = true;
                 Texture icon = definition.Sprite != null ? definition.Sprite.texture : null;
                 GUIContent content = new GUIContent(definition.name, icon);
                 bool selected = selectedDefinition == definition;
                 if (GUILayout.Toggle(selected, content, "Button", GUILayout.Height(28)))
                     selectedDefinition = definition;
             }
+            if (!foundMatch)
+                EditorGUILayout.HelpBox(
+                    $"No {placementLayer.ToString().ToLowerInvariant()} definitions match the search.",
+                    MessageType.Info);
             EditorGUILayout.EndScrollView();
         }
 
@@ -179,12 +247,13 @@ namespace ChronowalkGame.Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Selected Placement", EditorStyles.boldLabel);
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.ObjectField("Definition", placement.Definition, typeof(TileObject), false);
+            EditorGUILayout.ObjectField("Definition", placement.Definition, typeof(StageElement), false);
             placement.Position = EditorGUILayout.Vector2IntField("Position", placement.Position);
             placement.Direction = (Direction)EditorGUILayout.EnumPopup("Direction", placement.Direction);
+            if (placement.Definition is RoomObjectDefinition)
+                placement.CanBePushed = EditorGUILayout.Toggle("Can Be Pushed", placement.CanBePushed);
             if (EditorGUI.EndChangeCheck())
             {
-                ClampPlacement(placement);
                 MarkLevelDirty();
                 RefreshPreview();
                 SceneView.RepaintAll();
@@ -203,10 +272,16 @@ namespace ChronowalkGame.Editor
             DrawPlayerStart();
             DrawPlacementDirections();
 
+            Event currentEvent = Event.current;
+            if (currentEvent.type == EventType.MouseUp && currentEvent.button == brushButton)
+            {
+                EndBrushStroke();
+                return;
+            }
+
             if (!editMode || EditorApplication.isPlaying)
                 return;
 
-            Event currentEvent = Event.current;
             if (currentEvent.type == EventType.Layout)
                 HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
@@ -217,46 +292,139 @@ namespace ChronowalkGame.Editor
                 currentEvent.Use();
             }
 
-            if (currentEvent.type != EventType.MouseDown || (currentEvent.button != 0 && currentEvent.button != 1))
+            bool isBrushEvent = currentEvent.type == EventType.MouseDown ||
+                                currentEvent.type == EventType.MouseDrag;
+            if (!isBrushEvent)
                 return;
 
-            if (!TryGetCell(currentEvent.mousePosition, out Vector2Int cell))
-                return;
+            if (currentEvent.type == EventType.MouseDown)
+            {
+                if (!TryGetCell(currentEvent.mousePosition, out Vector2Int cell))
+                    return;
 
-            if (currentEvent.button == 1 || toolMode == ToolMode.Erase)
-                RemoveAt(cell);
-            else if (toolMode == ToolMode.Place)
-                PlaceAt(cell);
+                if (currentEvent.button == 1)
+                    BeginBrushStroke(cell, true, currentEvent.button);
+                else if (currentEvent.button == 0 && toolMode == ToolMode.Place)
+                    BeginBrushStroke(cell, false, currentEvent.button);
+                else if (currentEvent.button == 0 && toolMode == ToolMode.Select)
+                    SelectAt(cell);
+                else
+                    return;
+            }
+            else if (currentEvent.type == EventType.MouseDrag &&
+                     currentEvent.button == brushButton &&
+                     TryGetCell(currentEvent.mousePosition, out Vector2Int cell))
+            {
+                ContinueBrushStroke(cell);
+            }
             else
-                SelectAt(cell);
+                return;
 
             currentEvent.Use();
             sceneView.Repaint();
             Repaint();
         }
 
+        private void BeginBrushStroke(Vector2Int cell, bool erase, int button)
+        {
+            EndBrushStroke();
+            Undo.IncrementCurrentGroup();
+            brushUndoGroup = Undo.GetCurrentGroup();
+            brushButton = button;
+            eraseBrushStroke = erase;
+            Undo.SetCurrentGroupName(erase ? "Erase Level Tiles" : "Paint Level Tiles");
+            ApplyBrushToCell(cell);
+        }
+
+        private void ContinueBrushStroke(Vector2Int cell)
+        {
+            if (!hasLastBrushCell)
+            {
+                BeginBrushStroke(cell, eraseBrushStroke, brushButton);
+                return;
+            }
+
+            int x = lastBrushCell.x;
+            int y = lastBrushCell.y;
+            int dx = Mathf.Abs(cell.x - x);
+            int dy = Mathf.Abs(cell.y - y);
+            int stepX = x < cell.x ? 1 : -1;
+            int stepY = y < cell.y ? 1 : -1;
+            int error = dx - dy;
+
+            while (true)
+            {
+                ApplyBrushToCell(new Vector2Int(x, y));
+                if (x == cell.x && y == cell.y)
+                    break;
+
+                int doubledError = error * 2;
+                if (doubledError > -dy)
+                {
+                    error -= dy;
+                    x += stepX;
+                }
+
+                if (doubledError < dx)
+                {
+                    error += dx;
+                    y += stepY;
+                }
+            }
+        }
+
+        private void ApplyBrushToCell(Vector2Int cell)
+        {
+            lastBrushCell = cell;
+            hasLastBrushCell = true;
+            if (!brushedCells.Add(cell))
+                return;
+
+            if (eraseBrushStroke)
+                RemoveAt(cell);
+            else
+                PlaceAt(cell);
+        }
+
+        private void EndBrushStroke()
+        {
+            if (hasLastBrushCell && brushUndoGroup >= 0)
+                Undo.CollapseUndoOperations(brushUndoGroup);
+
+            hasLastBrushCell = false;
+            brushUndoGroup = -1;
+            brushButton = -1;
+            eraseBrushStroke = false;
+            brushedCells.Clear();
+        }
+
         private void DrawGrid()
         {
             Vector3 origin = level.Origin;
+            BoundsInt bounds = level.GetGridBounds();
+            int minX = bounds.xMin - 3;
+            int minY = bounds.yMin - 3;
+            int maxX = bounds.xMax + 3;
+            int maxY = bounds.yMax + 3;
             Color gridColor = new Color(0.25f, 0.8f, 1f, 0.75f);
             Handles.color = gridColor;
 
-            for (int x = 0; x <= level.Width; x++)
+            for (int x = minX; x <= maxX; x++)
             {
-                Vector3 start = origin + new Vector3(x, 0f, 0f);
-                Vector3 end = start + new Vector3(0f, level.Height, 0f);
+                Vector3 start = origin + new Vector3(x, minY, 0f);
+                Vector3 end = origin + new Vector3(x, maxY, 0f);
                 Handles.DrawLine(start, end);
             }
 
-            for (int y = 0; y <= level.Height; y++)
+            for (int y = minY; y <= maxY; y++)
             {
-                Vector3 start = origin + new Vector3(0f, y, 0f);
-                Vector3 end = start + new Vector3(level.Width, 0f, 0f);
+                Vector3 start = origin + new Vector3(minX, y, 0f);
+                Vector3 end = origin + new Vector3(maxX, y, 0f);
                 Handles.DrawLine(start, end);
             }
 
             Handles.color = Color.white;
-            Handles.Label(origin + new Vector3(0f, level.Height + 0.2f, 0f), level.name);
+            Handles.Label(origin + new Vector3(minX, maxY + 0.2f, 0f), level.name);
 
             Event currentEvent = Event.current;
             if (editMode && TryGetCell(currentEvent.mousePosition, out Vector2Int hoveredCell))
@@ -289,16 +457,32 @@ namespace ChronowalkGame.Editor
 
                 Vector3 center = CellCenter(placement.Position);
                 Vector3 direction = DirectionVector(placement.Direction);
+                bool isObject = placement.Definition is RoomObjectDefinition;
                 Color previousColor = Handles.color;
                 Handles.color = i == selectedPlacementIndex ? Color.yellow : Color.white;
                 Handles.ArrowHandleCap(
                     0,
-                    center + Vector3.back * 0.05f,
+                    center + Vector3.back * (isObject ? 0.12f : 0.05f),
                     Quaternion.LookRotation(Vector3.forward, direction),
                     0.35f,
                     EventType.Repaint);
+                Handles.Label(
+                    center + Vector3.up * (isObject ? 0.56f : 0.32f),
+                    GetDefinitionLabel(placement.Definition),
+                    GetTileLabelStyle());
                 Handles.color = previousColor;
             }
+        }
+
+        private static string GetDefinitionLabel(StageElement definition)
+        {
+            if (definition is TileObjectDefinition tile)
+                return $"Tile: {tile.TileType}";
+
+            if (definition is RoomObjectDefinition roomObject)
+                return $"Object: {roomObject.ObjectType}";
+
+            return "Missing";
         }
 
         private void DrawPlayerStart()
@@ -328,32 +512,41 @@ namespace ChronowalkGame.Editor
 
             Vector3 localPoint = ray.GetPoint(distance) - level.Origin;
             cell = new Vector2Int(Mathf.FloorToInt(localPoint.x), Mathf.FloorToInt(localPoint.y));
-            return cell.x >= 0 && cell.x < level.Width && cell.y >= 0 && cell.y < level.Height;
+            return true;
         }
 
         private void PlaceAt(Vector2Int cell)
         {
             if (selectedDefinition == null)
             {
-                ShowNotification(new GUIContent("Select a tile definition first."));
+                ShowNotification(new GUIContent($"Select a {placementLayer.ToString().ToLowerInvariant()} definition first."));
                 return;
             }
 
-            if (cell == level.PlayerStart &&
-                selectedDefinition.TileType != TileType.Corridor)
+            bool selectedElementMatchesLayer = placementLayer == PlacementLayer.Tile
+                ? selectedDefinition is TileObjectDefinition
+                : selectedDefinition is RoomObjectDefinition;
+            if (!selectedElementMatchesLayer)
+                return;
+
+            if (placementLayer == PlacementLayer.Tile &&
+                cell == level.PlayerStart &&
+                selectedDefinition is TileObjectDefinition selectedTile &&
+                selectedTile.TileType != TileType.Corridor)
             {
                 ShowNotification(new GUIContent("Only a corridor tile can share the player start cell."));
                 return;
             }
 
-            int existingIndex = FindPlacementAt(cell);
-            Undo.RecordObject(level, "Place Level Tile");
+            int existingIndex = FindPlacementAt(cell, placementLayer);
+            Undo.RecordObject(level, placementLayer == PlacementLayer.Tile ? "Place Level Tile" : "Place Level Object");
 
             ObjectData placement = new ObjectData
             {
                 Definition = selectedDefinition,
                 Position = cell,
-                Direction = placementDirection
+                Direction = placementDirection,
+                CanBePushed = true
             };
 
             if (existingIndex >= 0)
@@ -373,7 +566,7 @@ namespace ChronowalkGame.Editor
 
         private void SelectAt(Vector2Int cell)
         {
-            selectedPlacementIndex = FindPlacementAt(cell);
+            selectedPlacementIndex = FindPlacementAt(cell, placementLayer);
             if (selectedPlacementIndex >= 0)
             {
                 ObjectData placement = level.Placements[selectedPlacementIndex];
@@ -384,7 +577,7 @@ namespace ChronowalkGame.Editor
 
         private void RemoveAt(Vector2Int cell)
         {
-            int index = FindPlacementAt(cell);
+            int index = FindPlacementAt(cell, placementLayer);
             if (index >= 0)
                 RemovePlacement(index);
         }
@@ -394,30 +587,28 @@ namespace ChronowalkGame.Editor
             if (level == null || index < 0 || index >= level.Placements.Count)
                 return;
 
-            Undo.RecordObject(level, "Erase Level Tile");
+            Undo.RecordObject(
+                level,
+                placementLayer == PlacementLayer.Tile ? "Erase Level Tile" : "Erase Level Object");
             level.Placements.RemoveAt(index);
             selectedPlacementIndex = -1;
             MarkLevelDirty();
             RefreshPreview();
         }
 
-        private int FindPlacementAt(Vector2Int cell)
+        private int FindPlacementAt(Vector2Int cell, PlacementLayer layer)
         {
             for (int i = level.Placements.Count - 1; i >= 0; i--)
             {
                 ObjectData placement = level.Placements[i];
-                if (placement != null && placement.Position == cell)
+                bool matchesLayer = placement != null && (layer == PlacementLayer.Tile
+                    ? placement.Definition is TileObjectDefinition
+                    : placement.Definition is RoomObjectDefinition);
+                if (matchesLayer && placement.Position == cell)
                     return i;
             }
 
             return -1;
-        }
-
-        private void ClampPlacement(ObjectData placement)
-        {
-            placement.Position = new Vector2Int(
-                Mathf.Clamp(placement.Position.x, 0, level.Width - 1),
-                Mathf.Clamp(placement.Position.y, 0, level.Height - 1));
         }
 
         private void CreateLevelAsset()
@@ -439,12 +630,12 @@ namespace ChronowalkGame.Editor
         private void RefreshDefinitions()
         {
             definitions.Clear();
-            string[] guids = AssetDatabase.FindAssets("t:TileObject");
+            string[] guids = AssetDatabase.FindAssets("t:ScriptableObject");
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                TileObject definition = AssetDatabase.LoadAssetAtPath<TileObject>(path);
-                if (definition != null)
+                StageElement definition = AssetDatabase.LoadAssetAtPath<StageElement>(path);
+                if (definition is TileObjectDefinition || definition is RoomObjectDefinition)
                     definitions.Add(definition);
             }
 
@@ -474,12 +665,15 @@ namespace ChronowalkGame.Editor
                 instance.name = $"{placement.Definition.name} ({placement.Position.x}, {placement.Position.y})";
                 SetHideFlagsRecursively(instance.transform, HideFlags.DontSave);
                 instance.transform.SetParent(previewRoot.transform, false);
-                instance.transform.position = CellCenter(placement.Position);
+                Vector3 position = CellCenter(placement.Position);
+                if (placement.Definition is RoomObjectDefinition)
+                    position.z -= 0.1f;
+                instance.transform.position = position;
                 instance.transform.rotation = DirectionRotation(placement.Direction);
             }
         }
 
-        private GameObject CreatePreviewObject(TileObject definition)
+        private GameObject CreatePreviewObject(StageElement definition)
         {
             if (definition.Prefab != null)
             {
@@ -546,18 +740,26 @@ namespace ChronowalkGame.Editor
             }
         }
 
+        private static GUIStyle CreateTileLabelStyle()
+        {
+            return new GUIStyle(EditorStyles.boldLabel)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = Color.white }
+            };
+        }
+
+        private GUIStyle GetTileLabelStyle()
+        {
+            if (tileLabelStyle == null)
+                tileLabelStyle = CreateTileLabelStyle();
+
+            return tileLabelStyle;
+        }
+
         private void MarkLevelDirty()
         {
             EditorUtility.SetDirty(level);
-        }
-
-        private void ClampPlacements()
-        {
-            foreach (ObjectData placement in level.Placements)
-            {
-                if (placement != null)
-                    ClampPlacement(placement);
-            }
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)
