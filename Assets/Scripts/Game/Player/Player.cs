@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace ChronowalkGame.Game.PlayerEntities
 {
-    public class Player : MonoSingleton<Player>, IRoomStateful
+    public class Player : MonoSingleton<Player>, IStateful
     {
         [SerializeField] private Direction facing = Direction.Up;
 

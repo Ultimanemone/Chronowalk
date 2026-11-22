@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Width: 1
   Height: 1
-  TurnLimit: 5
+  TurnLimit: 6
   Origin: {x: 0, y: 0, z: 0}
   PlayerStart: {x: 1, y: 1}
   PlayerDirection: 0
@@ -22,90 +22,128 @@ MonoBehaviour:
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 0, y: 1}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 2, y: 0}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 3, y: 0}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 0, y: 2}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 0, y: 3}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 0, y: 4}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 1, y: 5}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 0, y: 5}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 4, y: 5}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 4, y: 4}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 4, y: 3}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 4, y: 2}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 4, y: 1}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 4, y: 0}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 058773f47ec116c42b5200e3641339d2, type: 2}
     Position: {x: 3, y: 5}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 2, y: 5}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: b14e7c38e033b2f4883357e50ad4278e, type: 2}
     Position: {x: 3, y: 4}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 2, y: 4}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 1, y: 4}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 1, y: 3}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 1, y: 2}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 1, y: 1}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 2, y: 1}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 2, y: 2}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 2, y: 3}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 3, y: 3}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 3, y: 2}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 6039dd60519bea44d91796c54db4051a, type: 2}
     Position: {x: 3, y: 1}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 1, y: 0}
     Direction: 0
+    CanBePushed: 1
   - Definition: {fileID: 11400000, guid: 9f6a9a01ede24094f87559dcd37e8353, type: 2}
     Position: {x: 0, y: 0}
     Direction: 0
+    CanBePushed: 1
+  - Definition: {fileID: 11400000, guid: 383fd75b30012e74f8701c7acd9b9670, type: 2}
+    Position: {x: 2, y: 2}
+    Direction: 0
+    CanBePushed: 1
+  - Definition: {fileID: 11400000, guid: 383fd75b30012e74f8701c7acd9b9670, type: 2}
+    Position: {x: 2, y: 1}
+    Direction: 0
+    CanBePushed: 1

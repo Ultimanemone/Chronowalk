@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ChronowalkGame.Game.Stage.Tiles.Runtime
 {
-    public class TrapRuntime : MonoBehaviour, IRoomStateful
+    public class TrapRuntime : MonoBehaviour, IStateful
     {
         private bool isFillableHole;
         private bool isFilled;

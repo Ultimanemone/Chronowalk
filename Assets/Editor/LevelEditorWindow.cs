@@ -1,10 +1,12 @@
-using System;
-using System.Collections.Generic;
 using ChronowalkGame.Game.PlayerEntities;
 using ChronowalkGame.Game.Stage;
 using ChronowalkGame.Game.Stage.Data;
 using ChronowalkGame.Game.Stage.Objects.Definitions;
 using ChronowalkGame.Game.Stage.Tiles.Definitions;
+using Microsoft.SqlServer.Server;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using UnityEditor;
 using UnityEngine;
 
@@ -175,9 +177,9 @@ namespace ChronowalkGame.Editor
             ObjectData spawnPlacement = level.Placements.Find(placement =>
                 placement != null &&
                 placement.Position == level.PlayerStart &&
-                placement.Definition is TileObjectDefinition);
+                placement.Definition is StageTileDefinition);
             if (spawnPlacement != null &&
-                spawnPlacement.Definition is TileObjectDefinition spawnTile &&
+                spawnPlacement.Definition is StageTileDefinition spawnTile &&
                 spawnTile.TileType != TileType.Corridor)
             {
                 EditorGUILayout.HelpBox(
@@ -212,8 +214,8 @@ namespace ChronowalkGame.Editor
             foreach (StageElement definition in definitions)
             {
                 bool matchesLayer = placementLayer == PlacementLayer.Tile
-                    ? definition is TileObjectDefinition
-                    : definition is RoomObjectDefinition;
+                    ? definition is StageTileDefinition
+                    : definition is StageObjectDefinition;
                 if (definition == null ||
                     !matchesLayer ||
                     (!string.IsNullOrEmpty(paletteSearch) &&
@@ -250,7 +252,7 @@ namespace ChronowalkGame.Editor
             EditorGUILayout.ObjectField("Definition", placement.Definition, typeof(StageElement), false);
             placement.Position = EditorGUILayout.Vector2IntField("Position", placement.Position);
             placement.Direction = (Direction)EditorGUILayout.EnumPopup("Direction", placement.Direction);
-            if (placement.Definition is RoomObjectDefinition)
+            if (placement.Definition is StageObjectDefinition)
                 placement.CanBePushed = EditorGUILayout.Toggle("Can Be Pushed", placement.CanBePushed);
             if (EditorGUI.EndChangeCheck())
             {
@@ -406,7 +408,7 @@ namespace ChronowalkGame.Editor
             int minY = bounds.yMin - 3;
             int maxX = bounds.xMax + 3;
             int maxY = bounds.yMax + 3;
-            Color gridColor = new Color(0.25f, 0.8f, 1f, 0.75f);
+            Color gridColor = new Color(1f, 0.6f, 0f, 0.75f);
             Handles.color = gridColor;
 
             for (int x = minX; x <= maxX; x++)
@@ -457,7 +459,7 @@ namespace ChronowalkGame.Editor
 
                 Vector3 center = CellCenter(placement.Position);
                 Vector3 direction = DirectionVector(placement.Direction);
-                bool isObject = placement.Definition is RoomObjectDefinition;
+                bool isObject = placement.Definition is StageObjectDefinition;
                 Color previousColor = Handles.color;
                 Handles.color = i == selectedPlacementIndex ? Color.yellow : Color.white;
                 Handles.ArrowHandleCap(
@@ -468,19 +470,19 @@ namespace ChronowalkGame.Editor
                     EventType.Repaint);
                 Handles.Label(
                     center + Vector3.up * (isObject ? 0.56f : 0.32f),
-                    GetDefinitionLabel(placement.Definition),
-                    GetTileLabelStyle());
+                    GetLabel(placement.Definition),
+                    GetLabelStyle(placement.Definition));
                 Handles.color = previousColor;
             }
         }
 
-        private static string GetDefinitionLabel(StageElement definition)
+        private static string GetLabel(StageElement definition)
         {
-            if (definition is TileObjectDefinition tile)
-                return $"Tile: {tile.TileType}";
+            if (definition is StageTileDefinition tile)
+                return $"{tile.TileType}";
 
-            if (definition is RoomObjectDefinition roomObject)
-                return $"Object: {roomObject.ObjectType}";
+            if (definition is StageObjectDefinition roomObject)
+                return $"{roomObject.ObjectType}";
 
             return "Missing";
         }
@@ -524,14 +526,14 @@ namespace ChronowalkGame.Editor
             }
 
             bool selectedElementMatchesLayer = placementLayer == PlacementLayer.Tile
-                ? selectedDefinition is TileObjectDefinition
-                : selectedDefinition is RoomObjectDefinition;
+                ? selectedDefinition is StageTileDefinition
+                : selectedDefinition is StageObjectDefinition;
             if (!selectedElementMatchesLayer)
                 return;
 
             if (placementLayer == PlacementLayer.Tile &&
                 cell == level.PlayerStart &&
-                selectedDefinition is TileObjectDefinition selectedTile &&
+                selectedDefinition is StageTileDefinition selectedTile &&
                 selectedTile.TileType != TileType.Corridor)
             {
                 ShowNotification(new GUIContent("Only a corridor tile can share the player start cell."));
@@ -602,8 +604,8 @@ namespace ChronowalkGame.Editor
             {
                 ObjectData placement = level.Placements[i];
                 bool matchesLayer = placement != null && (layer == PlacementLayer.Tile
-                    ? placement.Definition is TileObjectDefinition
-                    : placement.Definition is RoomObjectDefinition);
+                    ? placement.Definition is StageTileDefinition
+                    : placement.Definition is StageObjectDefinition);
                 if (matchesLayer && placement.Position == cell)
                     return i;
             }
@@ -635,7 +637,7 @@ namespace ChronowalkGame.Editor
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 StageElement definition = AssetDatabase.LoadAssetAtPath<StageElement>(path);
-                if (definition is TileObjectDefinition || definition is RoomObjectDefinition)
+                if (definition is StageTileDefinition || definition is StageObjectDefinition)
                     definitions.Add(definition);
             }
 
@@ -666,7 +668,7 @@ namespace ChronowalkGame.Editor
                 SetHideFlagsRecursively(instance.transform, HideFlags.DontSave);
                 instance.transform.SetParent(previewRoot.transform, false);
                 Vector3 position = CellCenter(placement.Position);
-                if (placement.Definition is RoomObjectDefinition)
+                if (placement.Definition is StageObjectDefinition)
                     position.z -= 0.1f;
                 instance.transform.position = position;
                 instance.transform.rotation = DirectionRotation(placement.Direction);
@@ -740,21 +742,23 @@ namespace ChronowalkGame.Editor
             }
         }
 
-        private static GUIStyle CreateTileLabelStyle()
+        private GUIStyle GetLabelStyle(StageElement definition)
         {
-            return new GUIStyle(EditorStyles.boldLabel)
+            Color c;
+            if (definition is StageTileDefinition)
+                c = Color.white;
+            else if (definition is StageObjectDefinition)
+                c = Color.yellow;
+            else
+                c = Color.red;
+
+            GUIStyle style = new GUIStyle(EditorStyles.boldLabel)
             {
                 alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = Color.white }
+                normal = { textColor = c }
             };
-        }
 
-        private GUIStyle GetTileLabelStyle()
-        {
-            if (tileLabelStyle == null)
-                tileLabelStyle = CreateTileLabelStyle();
-
-            return tileLabelStyle;
+            return style;
         }
 
         private void MarkLevelDirty()

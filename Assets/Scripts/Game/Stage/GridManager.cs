@@ -11,7 +11,7 @@ namespace ChronowalkGame.Game.Stage
 {
     public class GridManager : MonoSingleton<GridManager>
     {
-        private Dictionary<Vector2Int, TileObjectDefinition> tiles = new Dictionary<Vector2Int, TileObjectDefinition>();
+        private Dictionary<Vector2Int, StageTileDefinition> tiles = new Dictionary<Vector2Int, StageTileDefinition>();
         private Dictionary<Vector2Int, GameObject> tileRuntimeObjects = new Dictionary<Vector2Int, GameObject>();
         private List<GameObject> roomObjects = new List<GameObject>();
         private Vector3 origin;
@@ -33,7 +33,7 @@ namespace ChronowalkGame.Game.Stage
             origin = level.Origin;
         }
 
-        public bool SetTile(Vector2Int cell, TileObjectDefinition tile, GameObject runtimeObject = null)
+        public bool SetTile(Vector2Int cell, StageTileDefinition tile, GameObject runtimeObject = null)
         {
             if (!IsWithinBounds(cell))
                 return false;
@@ -63,7 +63,7 @@ namespace ChronowalkGame.Game.Stage
             return true;
         }
 
-        public bool TryGetTile(Vector2Int cell, out TileObjectDefinition tile)
+        public bool TryGetTile(Vector2Int cell, out StageTileDefinition tile)
         {
             tile = null;
             if (!IsWithinBounds(cell))
@@ -74,7 +74,7 @@ namespace ChronowalkGame.Game.Stage
 
         public bool IsType(TileType type, Vector2Int cell)
         {
-            return TryGetTile(cell, out TileObjectDefinition tile) && tile.TileType == type;
+            return TryGetTile(cell, out StageTileDefinition tile) && tile.TileType == type;
         }
 
         public bool IsWalkable(Vector2Int cell, Transform actor = null)
@@ -92,7 +92,7 @@ namespace ChronowalkGame.Game.Stage
             {
                 foreach (MonoBehaviour behaviour in tileObject.GetComponentsInChildren<MonoBehaviour>(true))
                 {
-                    if (!(behaviour is IRoomBlocker blocker))
+                    if (!(behaviour is IActorBlocker blocker))
                         continue;
 
                     hasMovementRule = true;
@@ -104,7 +104,7 @@ namespace ChronowalkGame.Game.Stage
             if (hasMovementRule)
                 return true;
 
-            if (!TryGetTile(cell, out TileObjectDefinition tile))
+            if (!TryGetTile(cell, out StageTileDefinition tile))
                 return true;
             if (tile.TileType == TileType.Trap &&
                 TryGetTrap(cell, out TrapRuntime trap) &&
@@ -114,10 +114,10 @@ namespace ChronowalkGame.Game.Stage
             return tile.AllowsActors;
         }
 
-        public bool TryGetPushable(Vector2Int cell, out IRoomPushable pushable)
+        public bool TryGetPushable(Vector2Int cell, out IPushable pushable)
         {
             pushable = null;
-            return TryGetRoomObject(cell, out RoomObjectRuntime roomObject) &&
+            return TryGetRoomObject(cell, out StageObjectRuntime roomObject) &&
                    (pushable = roomObject) != null;
         }
 
@@ -133,7 +133,7 @@ namespace ChronowalkGame.Game.Stage
 
         public bool TryGetRuntimeObject(Vector2Int cell, out GameObject runtimeObject)
         {
-            if (TryGetRoomObject(cell, out RoomObjectRuntime roomObject))
+            if (TryGetRoomObject(cell, out StageObjectRuntime roomObject))
             {
                 runtimeObject = roomObject.ObjectGameObject;
                 return true;
@@ -142,7 +142,7 @@ namespace ChronowalkGame.Game.Stage
             return TryGetTileRuntimeObject(cell, out runtimeObject);
         }
 
-        public bool TryGetRoomObject(Vector2Int cell, out RoomObjectRuntime roomObject)
+        public bool TryGetRoomObject(Vector2Int cell, out StageObjectRuntime roomObject)
         {
             roomObject = null;
             if (!IsWithinBounds(cell))
@@ -155,7 +155,7 @@ namespace ChronowalkGame.Game.Stage
                     WorldToCell(candidate.transform.position) != cell)
                     continue;
 
-                roomObject = candidate.GetComponentInChildren<RoomObjectRuntime>(true);
+                roomObject = candidate.GetComponentInChildren<StageObjectRuntime>(true);
                 if (roomObject != null)
                     return true;
             }
@@ -163,19 +163,19 @@ namespace ChronowalkGame.Game.Stage
             return false;
         }
 
-        public bool CanObjectEnter(Vector2Int cell, RoomObjectRuntime movingObject = null)
+        public bool CanObjectEnter(Vector2Int cell, StageObjectRuntime movingObject = null)
         {
             if (!IsWithinBounds(cell))
                 return false;
 
-            if (TryGetTile(cell, out TileObjectDefinition tile) && !tile.AllowsObjects)
+            if (TryGetTile(cell, out StageTileDefinition tile) && !tile.AllowsObjects)
                 return false;
 
             if (TryGetTileRuntimeObject(cell, out GameObject tileRuntime))
             {
                 foreach (MonoBehaviour behaviour in tileRuntime.GetComponentsInChildren<MonoBehaviour>(true))
                 {
-                    if (behaviour is IRoomObjectEntryRule entryRule && !entryRule.AllowsObjectEntry)
+                    if (behaviour is IObjectEntryRule entryRule && !entryRule.AllowsObjectEntry)
                         return false;
                 }
             }
@@ -187,7 +187,7 @@ namespace ChronowalkGame.Game.Stage
                     WorldToCell(candidate.transform.position) != cell)
                     continue;
 
-                RoomObjectRuntime occupant = candidate.GetComponentInChildren<RoomObjectRuntime>(true);
+                StageObjectRuntime occupant = candidate.GetComponentInChildren<StageObjectRuntime>(true);
                 if (occupant != null && occupant != movingObject)
                     return false;
             }
@@ -233,19 +233,19 @@ namespace ChronowalkGame.Game.Stage
 
         private bool BlocksLaser(Vector2Int cell)
         {
-            if (TryGetTile(cell, out TileObjectDefinition tile) && tile.BlocksLaser)
+            if (TryGetTile(cell, out StageTileDefinition tile) && tile.BlocksLaser)
                 return true;
 
             if (TryGetTileRuntimeObject(cell, out GameObject tileObject))
             {
                 foreach (MonoBehaviour behaviour in tileObject.GetComponentsInChildren<MonoBehaviour>(true))
                 {
-                    if (behaviour is IRoomLaserBlocker laserBlocker && laserBlocker.BlocksLaser)
+                    if (behaviour is ILaserBLocker laserBlocker && laserBlocker.BlocksLaser)
                         return true;
                 }
             }
 
-            if (TryGetRoomObject(cell, out RoomObjectRuntime roomObject) && roomObject.BlocksLaser)
+            if (TryGetRoomObject(cell, out StageObjectRuntime roomObject) && roomObject.BlocksLaser)
                 return true;
 
             return false;

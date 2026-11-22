@@ -13,7 +13,7 @@ namespace ChronowalkGame.Game.Stage
                 return false;
 
             Vector2Int targetCell = grid.WorldToCell(actor.position) + direction;
-            if (grid.TryGetPushable(targetCell, out IRoomPushable pushable))
+            if (grid.TryGetPushable(targetCell, out IPushable pushable))
             {
                 return pushable.CanPush(direction, actor, grid) &&
                        grid.IsWalkableIgnoringRoomObject(targetCell, actor);
@@ -41,7 +41,7 @@ namespace ChronowalkGame.Game.Stage
 
                 setFacing(direction);
                 Vector2Int targetCell = grid.WorldToCell(actor.position) + action.Direction;
-                if (grid.TryGetPushable(targetCell, out IRoomPushable pushable))
+                if (grid.TryGetPushable(targetCell, out IPushable pushable))
                 {
                     if (!pushable.TryPush(action.Direction, actor, grid))
                         return;
@@ -79,7 +79,7 @@ namespace ChronowalkGame.Game.Stage
         {
             foreach (MonoBehaviour behaviour in target.GetComponentsInChildren<MonoBehaviour>(true))
             {
-                if (behaviour is IRoomInteractable interactable)
+                if (behaviour is IInteractable interactable)
                     interactable.Interact(actor);
             }
         }

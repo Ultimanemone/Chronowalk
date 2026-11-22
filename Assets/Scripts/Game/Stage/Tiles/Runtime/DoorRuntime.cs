@@ -4,10 +4,10 @@ using ChronowalkGame.Game.Stage.Contracts;
 namespace ChronowalkGame.Game.Stage.Tiles.Runtime
 {
     public class DoorRuntime : MonoBehaviour,
-        IRoomBlocker,
-        IRoomInteractable,
-        IRoomObjectEntryRule,
-        IRoomStateful
+        IActorBlocker,
+        IInteractable,
+        IObjectEntryRule,
+        IStateful
     {
         public bool IsOpen { get; private set; }
         public bool AllowsObjectEntry => IsOpen;

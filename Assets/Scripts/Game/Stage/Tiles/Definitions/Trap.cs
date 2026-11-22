@@ -3,7 +3,7 @@ using UnityEngine;
 namespace ChronowalkGame.Game.Stage.Tiles.Definitions
 {
     [CreateAssetMenu(fileName = "Trap", menuName = "Chronowalk/Tiles/Trap")]
-    public class Trap : TileObjectDefinition
+    public class Trap : StageTileDefinition
     {
         public enum TrapBehavior
         {

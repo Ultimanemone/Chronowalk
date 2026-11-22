@@ -8,6 +8,7 @@ using ChronowalkGame.Game.Stage.Objects.Runtime;
 using ChronowalkGame.Game.Stage.Tiles.Definitions;
 using ChronowalkGame.Game.Stage.Tiles.Runtime;
 using ChronowalkGame.Utils;
+using ChronowalkGame.Utils.Logger;
 using UnityEngine;
 
 namespace ChronowalkGame.Game.Stage
@@ -32,7 +33,7 @@ namespace ChronowalkGame.Game.Stage
         private readonly List<LoopActionLog> completedLoops = new List<LoopActionLog>();
         private readonly List<PlayerAction> currentLoopActions = new List<PlayerAction>();
         private readonly List<RoomObjectSnapshot> roomSnapshot = new List<RoomObjectSnapshot>();
-        private readonly List<IRoomTurnSystem> turnSystems = new List<IRoomTurnSystem>();
+        private readonly List<IStageTurnSystem> turnSystems = new List<IStageTurnSystem>();
         private readonly List<Ghost> ghosts = new List<Ghost>();
 
         private Transform roomRoot;
@@ -109,16 +110,16 @@ namespace ChronowalkGame.Game.Stage
                 instance.name = $"{placement.Definition.name} ({placement.Position.x}, {placement.Position.y})";
                 instance.transform.SetParent(roomRoot, true);
                 instance.transform.position = gridManager.CellToWorld(placement.Position);
-                if (placement.Definition is RoomObjectDefinition)
+                if (placement.Definition is StageObjectDefinition)
                     instance.transform.position += Vector3.back * 0.1f;
                 instance.transform.rotation = DirectionUtility.ToRotation(placement.Direction);
 
-                if (placement.Definition is TileObjectDefinition tileDefinition)
+                if (placement.Definition is StageTileDefinition tileDefinition)
                 {
                     gridManager.SetTile(placement.Position, tileDefinition, instance);
                     ConfigureTileRuntime(instance, tileDefinition);
                 }
-                else if (placement.Definition is RoomObjectDefinition objectDefinition)
+                else if (placement.Definition is StageObjectDefinition objectDefinition)
                 {
                     gridManager.AddRoomObject(instance);
                     ConfigureRoomObjectRuntime(instance, objectDefinition, placement.Direction, placement.CanBePushed);
@@ -126,7 +127,7 @@ namespace ChronowalkGame.Game.Stage
 
                 foreach (MonoBehaviour behaviour in instance.GetComponentsInChildren<MonoBehaviour>(true))
                 {
-                    if (behaviour is IRoomTurnSystem turnSystem)
+                    if (behaviour is IStageTurnSystem turnSystem)
                         turnSystems.Add(turnSystem);
                 }
             }
@@ -272,6 +273,7 @@ namespace ChronowalkGame.Game.Stage
             LastLoopEndReason = "Level restarted";
             SetState(StageState.AwaitingAction);
             NotifyCountersChanged();
+            AdvLogger.Log("Level restarted");
             return true;
         }
 
@@ -279,6 +281,7 @@ namespace ChronowalkGame.Game.Stage
         {
             if (State == StageState.AwaitingAction || State == StageState.ResolvingTurn)
                 SetState(StageState.Completed);
+            AdvLogger.Log("Stage Complete");
         }
 
         private bool ValidateLevel(LevelData level, out string error)
@@ -312,9 +315,9 @@ namespace ChronowalkGame.Game.Stage
                 }
 
                 HashSet<Vector2Int> occupiedCells;
-                if (placement.Definition is TileObjectDefinition)
+                if (placement.Definition is StageTileDefinition)
                     occupiedCells = occupiedTileCells;
-                else if (placement.Definition is RoomObjectDefinition)
+                else if (placement.Definition is StageObjectDefinition)
                     occupiedCells = occupiedObjectCells;
                 else
                 {
@@ -324,14 +327,14 @@ namespace ChronowalkGame.Game.Stage
 
                 if (!occupiedCells.Add(placement.Position))
                 {
-                    string elementType = placement.Definition is TileObjectDefinition ? "tile" : "object";
+                    string elementType = placement.Definition is StageTileDefinition ? "tile" : "object";
                     error = $"More than one {elementType} is placed at {placement.Position}.";
                     return false;
                 }
             }
 
             if (level.Placements.Exists(placement =>
-                    placement.Definition is TileObjectDefinition tile &&
+                    placement.Definition is StageTileDefinition tile &&
                     placement.Position == level.PlayerStart &&
                     tile.TileType != TileType.Corridor))
             {
@@ -352,7 +355,7 @@ namespace ChronowalkGame.Game.Stage
             return instance;
         }
 
-        private static void ConfigureTileRuntime(GameObject instance, TileObjectDefinition definition)
+        private static void ConfigureTileRuntime(GameObject instance, StageTileDefinition definition)
         {
             switch (definition.TileType)
             {
@@ -371,7 +374,7 @@ namespace ChronowalkGame.Game.Stage
 
         private void ConfigureRoomObjectRuntime(
             GameObject instance,
-            RoomObjectDefinition definition,
+            StageObjectDefinition definition,
             Direction direction,
             bool canBePushed)
         {
@@ -383,9 +386,9 @@ namespace ChronowalkGame.Game.Stage
                 instance.GetComponentInChildren<LaserRuntime>(true) == null)
                 instance.AddComponent<LaserRuntime>();
 
-            RoomObjectRuntime objectRuntime = instance.GetComponentInChildren<RoomObjectRuntime>(true);
+            StageObjectRuntime objectRuntime = instance.GetComponentInChildren<StageObjectRuntime>(true);
             if (objectRuntime == null)
-                objectRuntime = instance.AddComponent<RoomObjectRuntime>();
+                objectRuntime = instance.AddComponent<StageObjectRuntime>();
             objectRuntime.Configure(definition, instance.transform, canBePushed);
 
             switch (definition.ObjectType)
@@ -555,7 +558,7 @@ namespace ChronowalkGame.Game.Stage
 
                 foreach (MonoBehaviour behaviour in target.GetComponents<MonoBehaviour>())
                 {
-                    if (behaviour is IRoomStateful roomStateful)
+                    if (behaviour is IStateful roomStateful)
                         componentStates.Add(new ComponentState(roomStateful, roomStateful.CaptureRoomState()));
                 }
             }
@@ -588,10 +591,10 @@ namespace ChronowalkGame.Game.Stage
 
         private sealed class ComponentState
         {
-            public IRoomStateful Component { get; }
+            public IStateful Component { get; }
             public object State { get; }
 
-            public ComponentState(IRoomStateful component, object state)
+            public ComponentState(IStateful component, object state)
             {
                 Component = component;
                 State = state;

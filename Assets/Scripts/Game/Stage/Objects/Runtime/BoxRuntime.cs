@@ -3,7 +3,7 @@ using ChronowalkGame.Game.Stage.Contracts;
 
 namespace ChronowalkGame.Game.Stage.Objects.Runtime
 {
-    public class BoxRuntime : MonoBehaviour, IRoomStateful
+    public class BoxRuntime : MonoBehaviour, IStateful
     {
         private const int TurretHitsToBreak = 2;
 
