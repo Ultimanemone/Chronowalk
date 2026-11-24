@@ -1,3 +1,4 @@
+## PHASE 1
 ### Gameplay
 - the player can use as many loop as they want each level
 - each loop is limited to certain number of turns each level
@@ -5,8 +6,9 @@
 - the player can choose to delete the most recently created loop
 - the player can restart the current loop or restart the whole level
 - the level ends when the player reaches an exit or complete certain objectives
-- for each turn the player can choose one action of the 3: move, wait, interact, and ending a loop
-- 
+- for each turn the player can choose one action of the 3: move, wait, interact,
+- other loop-related actions include: ending a loop and storing it, restarting the current loop without wiping the previous, delete the most recently added loop and restarting the entire stage altogether. these actions reset the current loop without saving it, if performed
+
 ### Technical
 - each level has data that can be loaded, stored in json format when saved with level editor
 - a turn has 3 phases: turn start, action, results, turn end
@@ -24,17 +26,23 @@
 - - editor grid and runtime stage bounds expand to include all placed tiles, including negative coordinates; tile type labels appear in the Scene view
 - tiles:
 - - wall: blocks player, objects and projectiles
-- - crevice: a tile with lower altitude than normal, can get the player stuck. a box can be pushed into a crevice and walked over
 - - trap: kills player and objects that moves over it, some traps (holes) can be filled with boxes then walked over
-- - conveyor: moves objects on top of it
-- - door: block players, can be opened by interacting or lever in some cases
 - objects:
+- - lever: moves conveyors, open doors, rotate prism/mirror, etc.
+- - door: block players, can be opened by interacting or lever in some cases
 - - box: can be pushed, breaks after being shot by turret, blocks laser
 - - laser: kills the player when the beam is touched, can be blocked with other objects
+- the level editor has separate tile-placement and object-placement modes; objects can be placed over tiles and edited independently
+- level editor within unity editor
+
+## PHASE 2
+### Technical
+- tiles:
 - - turret: if the player or any object moves into or inside their range, shoot at them. kills player in one shot, break boxes in 2 shots, player can hide behind boxes to block
 - - prism/mirror: redirects laser
-- - lever: moves conveyors, open doors, rotate prism/mirror, etc.
-- the level editor has separate tile-placement and object-placement modes; objects can be placed over tiles and edited independently
+- - conveyor: moves objects on top of it
+- objects:
+- - crevice: a tile with lower altitude than normal, can get the player stuck. a box can be pushed into a crevice and walked over
 
 ### Optional Expansions
 - in-game level editor

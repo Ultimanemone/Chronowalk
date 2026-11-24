@@ -1,0 +1,829 @@
+ VIETNAM NATIONAL UNIVERSITY, HO CHI MINH CITY
+     HO CHI MINH UNIVERSITY OF TECHNOLOGY
+  FACULTY OF COMPUTER SCIENCE AND ENGINEERING
+
+
+
+
+          Specialized Project (CO4029)
+
+                          REPORT
+
+Designing a 2.5D Puzzle Game in Unity
+   Featuring a Time-loop Mechanic
+
+
+
+              Lecturer:
+              Student:    Nguyễn Trung Tín   2353187
+
+
+
+
+             HO CHI MINH CITY, SEPTEMBER 2026
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+Contents
+1    Introduction                                                                                                     3
+     1.1 Project Background . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       3
+          1.1.1 ChronoWalk as a Research and Engineering Problem . . . . . . . . . . . . . . . . . . . .              3
+          1.1.2 Position within Puzzle-Game Research . . . . . . . . . . . . . . . . . . . . . . . . . . .            3
+          1.1.3 Project Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       3
+     1.2 Motivation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     4
+          1.2.1 Why a Limited Turn Allowance Is Useful . . . . . . . . . . . . . . . . . . . . . . . . . .            4
+          1.2.2 Why Replayable Actors Improve the Puzzle . . . . . . . . . . . . . . . . . . . . . . . . .            4
+          1.2.3 Expected Player Experience . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          4
+     1.3 Project Challenges . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       4
+          1.3.1 Replay Consistency . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        5
+                        1.3.1.a Replay Failure and Feedback . . . . . . . . . . . . . . . . . . . . . . .             5
+                        1.3.1.b Actor and Object Synchronization . . . . . . . . . . . . . . . . . . . . .            5
+          1.3.2 Room-State Restoration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          5
+          1.3.3 Level-Authoring Reliability . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         5
+          1.3.4 Human Factors and Presentation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          5
+     1.4 Project Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     5
+                        1.4.0.a Gameplay Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . .             6
+                        1.4.0.b Technical Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . . .          6
+                        1.4.0.c Quality and Evaluation Objectives . . . . . . . . . . . . . . . . . . . .             6
+          1.4.1 Expected Deliverables . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         6
+     1.5 Development and Evaluation Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .           6
+          1.5.1 Development Phases . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          6
+          1.5.2 Testing Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       7
+          1.5.3 Technical Risks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       7
+          1.5.4 Scope Boundaries . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          7
+     1.6 Development Approach . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         7
+                        1.6.0.a Rule-First Development . . . . . . . . . . . . . . . . . . . . . . . . . .            7
+                        1.6.0.b Iterative Room Construction . . . . . . . . . . . . . . . . . . . . . . . .           7
+                        1.6.0.c Incremental Verification . . . . . . . . . . . . . . . . . . . . . . . . . .          8
+                        1.6.0.d Design and Implementation Traceability . . . . . . . . . . . . . . . . .              8
+     1.7 Report Organization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      8
+
+2    Background                                                                                                       8
+     2.1 Time-Loop and Time-Manipulation Games . . . . . . . . . . . . . . . . . . . . . . . . . . . . .              8
+     2.2 Puzzle Game Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         9
+     2.3 Action Recording and Replay . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        9
+     2.4 State Management . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       9
+     2.5 Level Representation and Creation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        9
+     2.6 Comparison with the Proposed Game . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .            9
+
+3    Problem, Gameplay, and System Design                                                                           10
+     3.1 Overall Game Architecture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      10
+     3.2 Gameplay System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      10
+     3.3 Action Recording System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      11
+     3.4 Ghost Replay System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      11
+     3.5 Room Reset and State Management . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          11
+     3.6 Puzzle Interaction System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    12
+     3.7 Level Data and Level Loading . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       12
+     3.8 Level Creation Tool . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    12
+     3.9 Puzzle and Level Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      13
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                        Page 1/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+4    Implementation, Results, and Evaluation                                                                        15
+     4.1 Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.1.1 Development Environment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+          4.1.2 Overall Game Architecture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+          4.1.3 Gameplay Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+          4.1.4 Action Recording Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+          4.1.5 Ghost Replay Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+          4.1.6 Room Reset Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+          4.1.7 Puzzle Interaction Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+          4.1.8 Boxes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.1.9 Doors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.1.10 Lasers and Hazards . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.1.11 Traps and Other Mechanisms . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+          4.1.12 Level Data and Loading . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+          4.1.13 Level Creation Tool . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    15
+          4.1.14 User Interface Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+     4.2 Implementation Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.2.1 Completed Features . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        15
+          4.2.2 Prototype Screens and Figures . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+          4.2.3 Technical Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+     4.3 Testing and Evaluation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.3.1 Prototype Deployment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        15
+          4.3.2 Testing Strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    15
+          4.3.3 Unit and Component Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        15
+                        4.3.3.a Turn-System Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+                        4.3.3.b State and Reset Testing . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+                        4.3.3.c Interaction Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+                        4.3.3.d Editor and Level-Loading Testing . . . . . . . . . . . . . . . . . . . . .          15
+          4.3.4 System and Integration Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+                        4.3.4.a Gameplay Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          15
+                        4.3.4.b Usability Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+                        4.3.4.c Technical Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+          4.3.5 Compatibility Testing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+     4.4 Evaluation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   15
+          4.4.1 Gameplay Evaluation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+          4.4.2 Technical Evaluation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+          4.4.3 Usability and Replay Clarity . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+          4.4.4 Maintainability and Extensibility . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.4.5 Limitations and Defects . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+     4.5 Reevaluation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+          4.5.1 Required Corrections . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+          4.5.2 Priority Improvements . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+
+5    Conclusion                                                                                                     15
+     5.1 Project Summary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+     5.2 Achieved Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+     5.3 Uncompleted Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+     5.4 Lessons Learned . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      15
+         5.4.1 Technical Lessons . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        15
+         5.4.2 Gameplay Lessons . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         15
+         5.4.3 Process Lessons . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        15
+     5.5 Future Development . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                        Page 2/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+1       Introduction
+1.1      Project Background
+This project develops a 2.5D puzzle game in Unity. Each level is a room in which the player must complete an
+objective using a limited number of turns per attempt. The player may move, wait, interact with an object, or end
+the attempt. When the attempt ends – because the turn allowance is used, the player is defeated, or the player
+chooses to stop – the room returns to its initial state. The completed sequence of actions is retained and replayed
+by a ghost during the next attempt.
+    The player and ghosts occupy the same room and can affect its mechanisms. A ghost can, for example, repeat
+the actions that activate a switch while the current player uses the route that the switch opens. Further attempts can
+add more action sequences to the puzzle. The player is therefore solving the room across several attempts, rather
+than relying on a single uninterrupted run.
+    The project is organized into two phases. Phase 1 covers the core gameplay loop, a playable set of rooms, action
+recording and replay, reset behaviour, basic objectives and interactions, and a data-driven level workflow. Phase 2
+is planned to add further mechanisms and hazards, progression, scoring, presentation improvements, and broader
+gameplay evaluation. This report describes the Phase 1 design and prototype.
+
+1.1.1     ChronoWalk as a Research and Engineering Problem
+ChronoWalk is both a game-design experiment and a software-engineering exercise. The game-design aspect asks
+whether a previous attempt can become an active part of a later attempt. The engineering aspect asks how to
+represent, synchronize, and restore the state required for that mechanic. A command that was valid in one attempt
+may have a different result after a ghost, box, door, or hazard changes the room. The game must therefore distinguish
+a player’s intended action from the action’s final result.
+     The project uses a 2D grid for gameplay decisions and a 3D Unity scene for presentation. This division allows
+movement and puzzle rules to use discrete cell coordinates, while Unity animates the same actions in world space.
+It also makes the behaviour more testable: the logical destination of a move can be checked independently from an
+animation, and a replay can be evaluated against the same grid rules used by the current player.
+
+1.1.2     Position within Puzzle-Game Research
+The time-loop idea appears in several forms in existing games. Some games rewind a single character or alter the
+relationship between time and events, while others rely on schedules that repeat and can be observed or changed
+across attempts. ChronoWalk uses neither global rewind nor a fixed event timeline. Instead, it preserves an ordered
+sequence of player commands and instantiates a ghost for the sequence. The ghost is not a passive recording; it
+occupies the room and interacts with mechanisms through the normal game rules.
+    This difference makes the time-loop mechanic an object of both puzzle design and systems design. A designer
+must decide how many turns an attempt contains, how replayed actions are ordered, how interactions change the
+room, and how state is restored. A player must learn which actions are replayable, how repeated ghosts interact
+with hazards and objects, and how to plan the current attempt around the behaviour of earlier attempts.
+
+1.1.3     Project Scope
+The completed and in-progress scope can be divided into three areas. First, the prototype provides a grid-based
+room, player movement, waiting, interaction, a turn limit, and an exit objective. Second, it provides loop manage-
+ment through action recording, ghost replay, room reset, loop restart, level restart, and removal of the newest ghost.
+Third, it provides Unity data and tooling for placing tiles and room objects and initializing them into a playable
+stage.
+    The implemented room is a local, single-player experience. The project does not currently include multiplayer
+synchronization, network authority, economy systems, character classes, enemy AI, reinforcement learning, a cam-
+paign save system, or content downloaded at runtime. These features are outside the current Phase 1 scope. The
+report consequently evaluates the correctness and usability of the time-loop systems rather than a commercial-scale
+game or an online service.
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                       Page 3/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+1.2      Motivation
+In a conventional restart, the player begins again with the same world state and only their own understanding has
+changed. Here, a restart also turns the previous attempt into an actor. An attempt that did not solve the room can
+still contribute: its ghost may hold a switch, move an object, or reach a useful position while the player follows a
+different plan.
+     This makes the action sequence itself part of the solution. The player must consider what to do now and what
+they want a future ghost to do. A short turn allowance gives each attempt a clear planning limit, while the room
+reset makes it possible to revise a plan and try again. The design aims to make experimentation useful by showing
+the consequences of an attempt in the next one.
+
+1.2.1     Why a Limited Turn Allowance Is Useful
+The turn limit gives each attempt a visible and bounded purpose. Without a limit, a player could explore indefi-
+nitely and the loop mechanic would provide little need for planning. The limit in ChronoWalk is therefore both a
+puzzle constraint and a reset trigger. It forces the player to decide whether an attempt should collect information,
+manipulate a mechanism, create a useful ghost position, or move directly toward the exit.
+    The limit also creates a clear unit of synchronization. One player action advances the logical turn index by one,
+and each ghost attempts to replay the action at the same index. The turn-based structure avoids the ambiguity of
+free-running animation: if two actors act in the same turn, their results are evaluated by the stage manager rather
+than by incidental frame timing.
+
+1.2.2     Why Replayable Actors Improve the Puzzle
+A replayable actor has an effect that cannot be obtained by information alone. A ghost can stand on a switch, push
+a box, open a path, or die at a hazard while the current player uses a different route. The puzzle can consequently
+contain goals that require parallel or sequential cooperation between attempts.
+    This mechanic also permits a form of constructive failure. An attempt that does not reach the exit can still
+contribute an action sequence that improves the next attempt. At the same time, failure must remain understandable.
+The player should be able to identify whether a ghost failed because the target was blocked, the mechanism was
+unavailable, the target was outside the room, or the original sequence ended too early.
+
+1.2.3     Expected Player Experience
+The intended experience is one of experimentation and revision. The player reads the room, predicts the effect of
+a small set of actions, creates an attempt, and observes the room after reset. As ghosts accumulate, the player must
+distinguish the role of the current player from that of earlier attempts while remaining within the current turn limit.
+    The intended difficulty curve is gradual. Initial rooms should establish movement, waiting, interaction, and
+the basic loop reset. Later rooms should combine ghosts with boxes, doors, traps, lasers, and limited turn budgets.
+Difficulty should arise from combining understandable rules, not from adding unexplained exceptions or hidden
+event order.
+
+1.3      Project Challenges
+The main challenge is reliable and understandable replay. The game must record player commands and reproduce
+them consistently, including when an action has a different result in a later attempt. For example, a move that was
+possible before may be blocked by an object moved by another ghost. The rules for such cases, as well as the order
+in which players, ghosts, and room mechanisms act, must be defined clearly enough for players to plan around
+them.
+    Resetting the room presents a related state-management challenge. Room objects and mechanisms must return
+to their starting states at the end of an attempt, while the action histories needed by ghosts persist. A full level
+restart must also be distinguished from ending one attempt, since restarting a level should clear the histories built
+within it.
+    The project also needs a practical way to create and revise puzzle rooms. Each level must describe its layout,
+starting conditions, objectives, turn allowance, and interactive objects in data that the game can load. A basic level-
+creation workflow is included in the Phase 1 scope so that rooms can be iterated without implementing each one
+as a separate Unity scene.
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                        Page 4/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+1.3.1     Replay Consistency
+A ghost must replay the recorded commands in the same order and according to the same rules as the original
+player. Storing rendered positions or animation frames alone would be insufficient because an old position can no
+longer be valid after room objects move. The project therefore records logical actions and uses the current grid and
+room state to resolve each replay.
+    Determinism is also needed for debugging. Given the same level, turn sequence, room state, and ghost histories,
+the stage should produce the same result. This requirement makes the stage state machine, ghost readiness checks,
+and turn-resolution order central to the implementation.
+
+1.3.1.a     Replay Failure and Feedback
+When replay encounters an invalid or blocked command, the system must not silently interpret it as success. A
+blocked move is not a move to the target cell, and a failed interaction must not open a door or change a mechanism.
+The interface and stage log should eventually communicate these differences clearly enough for a player to adjust
+the room plan.
+
+1.3.1.b      Actor and Object Synchronization
+At the end of a turn, all actors must have been processed before hazards and environment effects are checked. A
+ghost should not act outside its turn index, and a player should not submit a second command before the current
+turn resolves. The stage manager is consequently responsible for action acceptance and for coordinating the player,
+ghosts, mechanisms, hazards, and counter updates.
+
+1.3.2     Room-State Restoration
+Room reset is difficult because the initial layout, runtime state, and action histories have different lifetimes. Initial
+level data should remain unchanged. Runtime values such as door state, trap state, box position, and player position
+must return to their loop-start values. Completed LoopActionLog objects must remain available for ghost creation.
+Restarting the entire level must remove all completed histories, whereas restarting a current loop must retain them.
+    The snapshot mechanism must cover both transforms and component state. Restoring only a player’s position
+would leave mechanisms in a changed state and make the next attempt inconsistent. In turn, a snapshot must restore
+the hierarchy safely even if an object has become inactive or has been destroyed.
+
+1.3.3     Level-Authoring Reliability
+Puzzle content must be practical to create and revise. The level representation needs to store grid dimensions,
+origin, player start, player facing, turn limit, tile placements, object placements, directions, and pushability options.
+It must also reject invalid configurations that could leave the player outside the room or cause multiple elements to
+occupy the same logical layer.
+    A level editor should share the same data types and validation rules as the runtime. A level that can be pre-
+viewed but fails during stage initialization is of limited value. The editor and loader must therefore use LevelData,
+ObjectData, tile definitions, object definitions, and grid bounds consistently.
+
+1.3.4     Human Factors and Presentation
+The mechanic is not understandable from code alone. The player needs an identifiable avatar, visually distinct
+ghosts, clear movement, and readable feedback for doors, boxes, hazards, and room reset. The remaining turn
+count, loop number, and reason for reset or loop completion should also be presented.
+    Presentation must not hide gameplay rules. An animation should not imply that a move succeeded when the
+logical destination was blocked. The code must validate the action, update the logical grid, and then animate the
+accepted result. This separation is especially important for replay and debugging.
+
+1.4      Project Objectives
+Phase 1 has the following objectives:
+
+      • review relevant time-loop, puzzle, and action-replay designs;
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                          Page 5/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+      • define the gameplay loop, turn phases, reset rules, and system architecture;
+
+      • implement player movement, waiting, and interaction, with a turn limit for each attempt;
+      • record actions and replay completed attempts through ghosts;
+      • reset room state while preserving the histories required for replay;
+      • implement basic environmental interactions, objectives, and completion conditions;
+
+      • store level data in Unity ScriptableObject assets and provide a basic level-creation workflow;
+      • integrate the systems into a playable prototype and produce a Game Design Document.
+
+   The number of attempts is not intended to be capped in the current design; the constraint is the turn allowance
+within each attempt. More advanced ghost coordination, hazards, hostile creatures, level progression, efficiency
+scoring, and expanded evaluation are planned for Phase 2.
+
+1.4.0.a     Gameplay Objectives
+The gameplay objective is to complete a room by reaching an exit. The player may need to use previous ghosts
+to manipulate mechanisms or remove barriers. The core implementation should make move, wait, interact, and
+end-loop behaviour available without adding a separate rule for every room type. Puzzle mechanisms should use
+the same turn lifecycle and logical grid.
+
+1.4.0.b      Technical Objectives
+The technical objective is to maintain a clear ownership of state and event order. The stage manager owns stage
+transitions and turn progression. The grid manager owns logical coordinates and movement rules. The player and
+ghost classes execute actions. Snapshot components restore changing room values, and level assets supply initial
+room configuration.
+
+1.4.0.c     Quality and Evaluation Objectives
+The prototype should be readable, deterministic, and maintainable. Replay should be correct for the same sequence
+and room state, reset operations should return to the intended scope, and level validation should catch invalid
+configurations. The project should also make failures visible so that incorrect movement or interaction is easier to
+diagnose.
+
+1.4.1     Expected Deliverables
+The Phase 1 deliverables are the playable Unity prototype, source implementation, level assets, a level-editor tool,
+the game-design document, and this report. Screenshots and test evidence can be added to later chapters after they
+have been captured from the actual build. Numerical claims about frame rate, completion success, or test counts
+will not be reported unless measured data is available.
+
+1.5       Development and Evaluation Scope
+1.5.1     Development Phases
+Development is organized into foundational implementation, system integration, content authoring, and evaluation.
+The first phase establishes grid movement and the stage state machine. The second establishes action recording and
+ghost replay. The third establishes reset snapshots, mechanism state, level loading, and level editing. The final phase
+evaluates the prototype, identifies defects, and records remaining work.
+    This order is deliberate. Ghost replay cannot be validated before movement and interaction have stable rules,
+and reset cannot be validated until the room contains stateful objects. A level editor is similarly most useful after
+the runtime format is stable. The process allows each system to be tested before subsequent systems depend on it.
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                        Page 6/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+1.5.2     Testing Scope
+The testing scope is divided into component validation, turn-system integration, and gameplay evaluation. Compo-
+nent validation should cover movement, blocked destinations, interaction targets, pushable objects, door state, trap
+state, and snapshot restoration. Turn-system integration should cover loop ending, ghost readiness, turn indexing,
+counter updates, reset, and level restart.
+    Gameplay evaluation should examine whether the player understands the objective, turn limit, ghost behaviour,
+reset, and mechanism responses. It should also examine whether a room can be solved consistently and whether
+repeated ghosts create useful puzzle alternatives. Formal automated tests will be identified in the implementation
+and evaluation chapter if they exist in the repository.
+
+1.5.3     Technical Risks
+The principal technical risks are replay drift, incomplete snapshot coverage, unclear actor ordering, invalid level
+placements, and state transitions that allow duplicate input. Replay drift may occur if a ghost is resolved with the
+wrong turn index or uses a rule different from the current player. Snapshot omissions may leave a door, trap, or box
+changed after reset. Invalid placements may create overlapping objects or unsupported player starts.
+    These risks are mitigated by a shared action resolver, explicit stage states, IStateful snapshots, level valida-
+tion, and fixed turn resolution. Remaining risks must be tested through implementation evidence and controlled
+gameplay runs rather than assumed to be resolved.
+
+1.5.4     Scope Boundaries
+Phase 1 does not include an unlimited number of simultaneous room behaviours or a complete campaign. It is
+a single-room prototype with the core loop and selected mechanisms. A level may contain several mechanisms,
+but no progression, unlock, score economy, campaign map, or persistent player profile is required for the Phase 1
+objective.
+    Phase 2 may expand ghost coordination, hazards, hostile creatures, level progression, efficiency scoring, pre-
+sentation, and usability. These plans are possible extensions but must not be described as already implemented.
+The report separates intended work from the functionality present in the Unity project.
+
+1.6      Development Approach
+Development begins by defining the action and reset rules, then implementing movement and interaction. Action
+recording and ghost replay are built on those rules, followed by room reset and basic mechanisms. Once the loop is
+in place, a set of rooms can introduce the mechanics gradually and combine them into puzzles that require cooper-
+ation across attempts. The Unity ScriptableObject level format and level-editor workflow support iteration on
+this content.
+    The remainder of the report reviews related games and design concepts, describes the prototype’s architecture
+and implementation, and presents deployment, evaluation, limitations, and conclusions.
+
+1.6.0.a     Rule-First Development
+The gameplay rules are implemented before presentation is treated as complete. A move, for example, is first
+resolved against grid and object rules; an animation is then used to present the result. If the logical action fails, the
+presentation should not move the actor to an invalid cell. This approach keeps visual changes and gameplay state
+aligned.
+
+1.6.0.b      Iterative Room Construction
+The level editor supports an iteration cycle in which a room can be placed, previewed, validated, and revised.
+During playtesting, mechanics should be introduced one at a time. A first room may test movement and reset, a
+later room may test box pushing or doors, and a more advanced room may combine those mechanisms with ghosts
+and hazards.
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                          Page 7/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+1.6.0.c     Incremental Verification
+Each major mechanic is verified before it is combined with others. Movement and waiting establish the turn index.
+Interaction establishes mechanism changes. Ghost replay establishes that the history is read and resolved correctly.
+Reset establishes that runtime state and histories do not interfere. This sequence reduces the number of variables
+that can cause a defect in complex puzzles.
+
+1.6.0.d      Design and Implementation Traceability
+The report follows the same structure as the implementation: problem and motivation, gameplay and system design,
+implementation and evaluation, then conclusions. This provides a trace from a design requirement to an implemen-
+tation responsibility and, ultimately, to verification. Unsupported or planned features are identified separately from
+completed functionality.
+
+1.7       Report Organization
+Chapter 2 reviews the technical and conceptual background. It examines time-loop and replay precedents, Unity
+architecture, state management, action replay, and level representation.
+    Chapter 3 defines the problem, gameplay rules, system design, turn resolution, reset semantics, and level-data
+architecture. It explains how requirements become runtime responsibilities.
+    Chapter 4 describes implementation and evaluation. It identifies the concrete Unity components, deployment
+setup, tests, measured or observed results, technical findings, limitations, and improvements.
+    Chapter 5 summarizes the project and identifies achieved objectives, incomplete objectives, lessons learned,
+and future work. The report therefore distinguishes current implementation from proposal and from planned Phase
+2 expansion.
+
+
+2      Background
+This section considers three uses of time in puzzle games: changing temporal rules, learning a recurring schedule,
+and carrying knowledge from one attempt to the next. It then reviews action replay, state management, and level
+authoring as design and implementation concerns related to this project.
+
+2.1       Time-Loop and Time-Manipulation Games
+Braid makes rewind part of its puzzle rules. Players use it to alter the relationship between movement and events
+in the level; some worlds also introduce objects or situations that do not follow the ordinary rewind rule. Solving
+a puzzle therefore requires reasoning about both position and which events can be reversed. Stamenković and
+Jaćević analyze the game through the relations among time, space, motion, and causality.1 Jonathan Blow’s GDC
+presentation on Braid’s rewind system also describes the engineering requirement to reproduce past game states
+accurately while keeping a long rewind history within the memory limits of consoles.2 These works make Braid
+relevant both as a puzzle-design example and as a technical case in temporal state restoration.
+     The Sexy Brutale uses a different structure. The events in its mansion recur on a shared daily schedule, and
+the player observes characters’ routines before intervening to prevent their deaths. The developers describe the
+characters as following synchronized schedules across the mansion, with events in one location affecting what
+others hear or do elsewhere.3 Its central puzzle activity is to learn the timeline and identify where an intervention
+can change its outcome. The repeated setting makes observations useful: the player can compare what happens at
+the same point in successive cycles.
+     Twelve Minutes places the emphasis on knowledge retained by the player. Director Luis Antonio described
+accumulated knowledge as the concept behind the game and explained that short loops and a small environment
+   1 Dušan Stamenković and Milan Jaćević, Time, Space, and Motion in Braid: A Cognitive-Semantic Approach to a Video Game, Games and
+
+Culture 10, no. 2 (2015): 178–203, https://doi.org/10.1177/1555412014557640.
+   2 Jonathan Blow, The Implementation of Rewind in Braid, Game Developers Conference, 2010, https://www.gdcvault.com/play/
+
+1012850/The-Implementation-of-Rewind-in.
+   3 Cavalier Game Studios, Murder Mystery Game The Sexy Brutale Available Now on Xbox One, Xbox Wire, April 12, 2017, https:
+
+//news.xbox.com/en-us/2017/04/12/the-sexy-brutale-available-now-xbox-one/.
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                                        Page 8/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+help players understand the consequences of their actions and plan another attempt.4 The character and situation
+repeat, but the player uses what they have learned to choose different actions. This is relevant to the project’s
+compact-room format and its aim of making attempts quick to inspect and revise.
+
+2.2      Puzzle Game Design
+Puzzle design depends on players being able to understand the goal, the available actions, and the consequences
+of those actions. Schell and Adams discuss goals, rules, challenge, and feedback as core parts of game design.5
+Applied to this project, the relevant principle is to introduce mechanics in a form players can observe, then com-
+bine familiar rules to create more demanding puzzles. A room should provide enough feedback for the player to
+understand what a ghost did and why an interaction succeeded or failed. Without that feedback, replay is difficult
+to reason about.
+
+2.3      Action Recording and Replay
+The Misadventures of P.B. Winterbottom provides a close example of recorded behaviour becoming part of a puzzle
+solution: the player records actions and cooperates with earlier versions of the character.6 This differs from a passive
+replay or visual trail because the recorded character can interact with the level alongside the current one.
+    The proposed game uses a related mechanic in turn-based rooms. Its design records player commands so a
+ghost can repeat the decisions that produced a useful position or interaction. The room rules then determine the
+outcome of those commands during replay. This means that replay must specify what happens when the room
+has changed since the original attempt—for example, when a move is blocked or an interaction target is no longer
+available. Defining those cases is part of making the ghost’s behaviour predictable.
+
+2.4      State Management
+A loop reset has to restore the room without erasing the history needed by its ghosts. The level’s initial object
+positions and mechanism states are resettable; completed action sequences persist across attempts. A full level
+restart has a wider scope and clears those histories as well. Keeping these categories distinct gives the game a clear
+basis for resetting the room and replaying earlier attempts.
+    Statecharts provide a formal way to describe system states and transitions, while Nystrom’s programming-
+pattern examples discuss ways of organizing object behaviour and state in software.7 For this project, the practical
+implication is to define the order of a turn explicitly: collect an action, resolve its effects and environmental re-
+sponses, then advance the turn. This helps prevent the result from depending on incidental update order.
+
+2.5      Level Representation and Creation
+A data-driven level separates puzzle content from the code that runs it. In this project, level data is intended to
+describe the room layout, starting conditions, objectives, turn allowance, and interactive objects; JSON provides
+the save and load format for the level workflow. Although procedural-content research also studies representations
+for game content, the project uses designed rooms rather than automatic level generation. The related concern is
+the need for a representation that the authoring workflow and game runtime can both interpret consistently.8
+
+2.6      Comparison with the Proposed Game
+These games provide distinct precedents rather than a single equivalent system. Braid makes temporal manipulation
+part of the puzzle rules; The Sexy Brutale asks players to learn and alter a recurring event schedule; and Twelve
+    4 Bryant   Francis, Using Accumulated Player Knowledge to Drive Design Decisions in Twelve Minutes, in-
+terview with Luis Antonio, Game Developer, September 9, 2021, https://www.gamedeveloper.com/design/
+q-a-i-twelve-minutes-i-director-luis-antonio-on-making-good-time-loop-games.
+    5 Jesse Schell, The Art of Game Design: A Book of Lenses, 3rd ed. (CRC Press, 2019); Ernest Adams, Fundamentals of Game Design (New
+
+Riders, 2014).
+    6 The Misadventures of P.B. Winterbottom, Steam store description, https://store.steampowered.com/app/40930/The_
+
+Misadventures_of_PB_Winterbottom/.
+    7 David Harel, Statecharts: A Visual Formalism for Complex Systems, Science 231, no. 4737 (1987): 671–676; Robert Nystrom, Game
+
+Programming Patterns (Genever Benning, 2014).
+    8 Noor Shaker, Julian Togelius, and Mark J. Nelson, Procedural Content Generation in Games (Springer, 2016).
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                                       Page 9/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+Minutes foregrounds knowledge accumulated across repeated attempts. The Misadventures of P.B. Winterbottom is
+a closer precedent for replayed actions cooperating with the current character.
+    The proposed game brings these ideas into a compact, turn-based room: each attempt has a limited action
+allowance, and past commands are replayed by ghosts that share the room with the player. The key distinction is
+that earlier attempts are not only remembered or used to alter time; they remain as actors whose actions can affect
+the current puzzle. This combination motivates the project’s focus on consistent replay, clearly visible interactions,
+and a reliable separation between resettable room state and persistent action histories.
+
+
+3      Problem, Gameplay, and System Design
+This chapter describes the proposed architecture and implementation plan for the Phase 1 prototype. The design
+targets Unity and a turn-based, grid-based 2.5D puzzle game. The game world is presented in three dimensions,
+while movement and puzzle rules use a two-dimensional grid. This separation keeps the rules discrete and pre-
+dictable while allowing the scene to use depth, lighting, and animation for presentation. Unless otherwise stated,
+the systems below describe the intended prototype design rather than completed implementation.
+
+3.1      Overall Game Architecture
+The prototype is divided into systems with separate responsibilities. The game-flow system manages level entry,
+attempts, completion, and restart. The turn controller coordinates the player, ghosts, and environment for each turn.
+Actor controllers produce actions, while world objects implement their own interaction rules. The level system
+loads and validates level data and constructs the room. The interface presents the current objective, remaining
+turns, and loop controls.
+    In Unity, scene objects can provide rendering, animation, and input, while the gameplay state is held in data-
+oriented runtime objects. This prevents visual effects from determining puzzle outcomes. For example, a player
+may animate between two grid cells, but the movement system changes the logical grid position according to the
+turn rules. A simplified dependency flow is:
+
+                                                            Input and interface
+                                                                     ↓
+                                                     Game flow and turn controller
+                                                                     ↓
+                                                 Actor actions and world interaction rules
+                                                                     ↓
+                                                Runtime level state and Unity presentation
+
+    The turn controller is the authority for advancing gameplay. Other systems may request an action or report a
+result, but they do not independently advance the turn counter. This provides one place to enforce turn limits and
+the order of events. The level data, current room state, and ghost histories are treated as separate data: level data
+defines the initial room, room state changes during an attempt, and ghost histories persist between attempts within
+the same level.
+
+3.2      Gameplay System
+The main game states are level loading, active attempt, attempt reset, level completion, and level restart. After a
+level loads, the game starts an attempt with the player at the defined starting cell and the room in its initial state. On
+each turn, the player chooses one action: move, wait, or interact. Existing ghosts replay the actions recorded during
+their respective attempts. The environment then resolves mechanisms and hazards before the game advances to the
+next turn.
+    Each turn is divided into four phases:
+
+    1. Turn start: the controller checks the attempt state and prepares one action for each ghost that still has a
+       recorded action, along with the player’s next action.
+    2. Action: the player supplies a move, wait, or interaction command. Ghost commands are read from their
+       action histories for the same turn index.
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                          Page 10/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+    3. Results: actions are resolved, then mechanisms and hazards respond to the updated room. The game checks
+       for player defeat and level completion.
+
+    4. Turn end: the player’s command is added to the current history, the turn counter advances, and the controller
+       checks the turn limit.
+
+    The turn limit applies to normal player actions. Ending an attempt early is a loop-control command and does
+not need to consume an additional turn. An attempt ends when the player chooses to end it, reaches the turn limit,
+or is defeated. The action history up to that point is kept as a ghost history, after which the room resets for the
+next attempt. Completing the level instead enters the completion state. Restarting the level clears all ghost histories
+created in that level and reloads its initial state.
+
+3.3      Action Recording System
+The action recorder stores one command per player turn. A command contains an action type and only the data
+needed to describe the player’s intent. For example, a move stores a direction, while an interaction stores the
+stable identifier of its target. The recorder does not need to store rendered positions or animation frames: these are
+presentation details and can be reproduced from the logical action results.
+    An action history is an ordered sequence indexed from the first turn of an attempt. At the end of an attempt, the
+sequence is copied into the level’s ghost-history collection. Histories are retained across ordinary attempt resets and
+removed when the player deletes the newest ghost or restarts the level. The current attempt has its own temporary
+history, which is committed as a ghost when that attempt ends. This distinction avoids modifying an existing ghost
+while the current player is acting.
+    Recording commands rather than outcomes allows a ghost to respond to the current room according to the
+normal rules. A command that succeeded during the original attempt may fail during replay if an object now
+blocks the way. The game should show this result clearly, while keeping the command sequence unchanged. This
+makes the room state and the action history sufficient to explain replay behaviour.
+
+3.4      Ghost Replay System
+At the start of each turn, every ghost reads the command at the current turn index from its action history. When a
+history has no command for that index, the ghost waits for the rest of the attempt. Ghosts therefore replay in parallel
+with the current player, and a history shorter than the current attempt does not stop the ghost from remaining in the
+room.
+    To make the outcome deterministic, actors are processed in a fixed order. The prototype can resolve existing
+ghosts from oldest to newest and then resolve the current player. Movement and object pushes are resolved first,
+followed by interactions and environmental effects. A blocked move becomes a no-op; an invalid interaction also
+has no effect. Ghosts can occupy the same cell as one another and the player, so they do not block actor movement.
+They can still activate mechanisms. Solid world objects, walls, and closed doors continue to block movement
+according to their rules.
+    This resolution policy is intentionally simple for Phase 1. If two actors attempt to push the same object, the
+earlier actor in the fixed order is resolved first; later actions are checked against the resulting state and may fail.
+The rule can be revised if playtesting shows that this ordering is difficult to understand, but it must remain explicit
+and visible in the game feedback.
+
+3.5      Room Reset and State Management
+The level definition is immutable during play and serves as the source for the initial room state. Runtime state
+contains changing values such as entity positions, door states, lever states, and hazard activation. At the beginning
+of a level, the level system instantiates the runtime entities from the definition. At the end of each attempt, it
+discards or reinitializes that runtime state and creates the room again from the same definition.
+    Ghost histories are maintained outside the resettable room state. An ordinary attempt reset preserves completed
+histories, clears the current attempt history and turn counter, and restores all level objects. Deleting the most recent
+ghost removes its history and then performs the same room reset. A full level restart also clears all histories. Sepa-
+rating these operations gives each reset a clear scope and avoids trying to reverse every object change individually.
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                        Page 11/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+3.6      Puzzle Interaction System
+Each interactive object responds to a small set of gameplay events through defined rules. A box may be pushed
+into an unoccupied cell, a door may block movement while closed, and a lever may change the state of one or
+more connected objects. The level data defines object properties and links, while shared interaction logic resolves
+whether an action is valid. Stable object identifiers are used for references such as a lever controlling a door.
+    The initial implementation should support movement, waiting, direct interaction, boxes, switches or levers,
+and doors. Additional planned objects include lasers, turrets, crevices, traps, mirrors, and conveyors. These can be
+added as separate object behaviours while using the same turn phases. For example, a laser checks its line after
+movement and mechanism updates; a mirror changes the beam direction; and a conveyor requests movement for
+entities on its cells. Hazards should be evaluated in a consistent order so that the same room state and commands
+always give the same outcome.
+    The game should provide feedback when an action changes the room or fails. Examples include a door opening,
+a box being blocked, or a ghost attempting to interact with a missing or inactive target. This feedback is essential
+to the puzzle design because the player needs to understand which part of a replay affected the current attempt.
+
+3.7      Level Data and Level Loading
+Levels are stored as JSON files so that puzzle content can be changed without changing gameplay code. A level
+definition contains a format version, identifier, display name, grid dimensions, turn allowance, player starting posi-
+tion, exit or completion rule, tile layout, and interactive entities. The coordinate system uses integer grid positions.
+The Unity scene maps those positions to world coordinates for rendering.
+    The following fragment illustrates the intended form of a level file:
+
+{
+    "version": 1,
+    "id": "room_01",
+    "size": { "width": 8, "height": 6 },
+    "turnLimit": 12,
+    "playerStart": { "x": 1, "y": 4 },
+    "completion": { "type": "reachExit", "x": 7, "y": 1 },
+    "objects": [
+      { "id": "box_a", "type": "box", "x": 2, "y": 4 },
+      { "id": "lever_a", "type": "lever", "x": 4, "y": 2,
+        "controls": ["door_a"] },
+      { "id": "door_a", "type": "door", "x": 6, "y": 2,
+        "initialState": "closed" }
+    ]
+}
+
+    The loader reads the file, checks that its version is supported, and validates required fields before constructing
+the room. Validation should reject invalid dimensions, coordinates outside the grid, duplicate identifiers, missing
+references, and missing required elements such as a player start or completion condition. If validation fails, the
+game should report the level identifier and the specific data error to help the designer correct the file. A successful
+load creates the board, places tiles and objects, saves the initial-state definition for resets, and starts the first attempt.
+
+3.8      Level Creation Tool
+The Phase 1 level-creation workflow is intended primarily for development and testing. A basic grid editor can be
+implemented as a Unity editor tool. It should allow a designer to set the grid dimensions and turn limit, place tiles
+and objects, set the player start and exit, edit object properties, and save or load the level as JSON. A validation
+command should identify missing or conflicting data before the level is played.
+    The first version does not require a polished public-facing editor. Its main purpose is to shorten the iteration
+cycle between changing a room and testing its puzzle. The editor and runtime loader should use the same level
+format and validation rules so that a level accepted by the editor can be loaded by the game. In the absence of an
+editor interface, the JSON format also permits levels to be created or revised directly as text files.
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                              Page 12/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+3.9      Puzzle and Level Design
+Levels should introduce one rule at a time before combining rules. Early rooms can teach movement, the turn
+allowance, and the effect of an attempt becoming a ghost. Subsequent rooms can require a ghost to activate a
+switch while the player moves through a door, then introduce movable boxes and environmental hazards. Later
+rooms can combine several histories and mechanisms, requiring the player to plan both the current attempt and the
+actions that future ghosts will repeat.
+    Each room should make its objective and relevant mechanisms readable. The player needs to see how many
+turns remain, which ghosts are active, and which mechanisms changed during replay. Optional performance mea-
+sures, such as the number of attempts or total actions, can be added after the core puzzle rules are stable. The
+current design does not cap the number of attempts; the per-attempt turn limit supplies the primary constraint.
+    The level set should be evaluated for both puzzle solvability and replay clarity. A room may be technically
+solvable but frustrating if the player cannot infer why a ghost’s action failed or how a mechanism changed. Iter-
+ation should therefore check that mechanics are introduced gradually, failed actions are communicated, and each
+additional ghost contributes a discernible effect to the solution.
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027                                                  Page 13/15
+                 Ho Chi Minh University of Technology
+                 Faculty of Computer Science and Engineering
+
+
+
+
+Specialized Project (CO4029) - 1st Semester 2026 - 2027        Page 14/15
+                Ho Chi Minh University of Technology
+                Faculty of Computer Science and Engineering
+
+
+4       Implementation, Results, and Evaluation
+4.1       Implementation
+4.1.1     Development Environment
+4.1.2     Overall Game Architecture
+4.1.3     Gameplay Implementation
+4.1.4     Action Recording Implementation
+4.1.5     Ghost Replay Implementation
+4.1.6     Room Reset Implementation
+4.1.7     Puzzle Interaction Implementation
+4.1.8     Boxes
+4.1.9     Doors
+4.1.10     Lasers and Hazards
+4.1.11     Traps and Other Mechanisms
+4.1.12     Level Data and Loading
+4.1.13     Level Creation Tool
+4.1.14     User Interface Implementation
+
+4.2       Implementation Results
+4.2.1     Completed Features
+4.2.2     Prototype Screens and Figures
+4.2.3     Technical Results
+
+4.3       Testing and Evaluation
+4.3.1     Prototype Deployment
+4.3.2     Testing Strategy
+4.3.3     Unit and Component Testing
+4.3.3.a     Turn-System Testing
+4.3.3.b     State and Reset Testing
+4.3.3.c    Interaction Testing
+4.3.3.d     Editor and Level-Loading Testing
+4.3.4     System and Integration Testing
+4.3.4.a     Gameplay Testing
+4.3.4.b     Usability Testing
+4.3.4.c    Technical Testing
+4.3.5     Compatibility Testing
+
+4.4       Evaluation
+4.4.1     Gameplay Evaluation
+4.4.2     Technical Evaluation
+4.4.3     Usability and Replay Clarity
+Specialized                        Semester
+            Project (CO4029) - 1st and
+4.4.4 Maintainability                       2026 - 2027
+                                        Extensibility         Page 15/15
+
+
+4.4.5     Limitations and Defects
+
+4.5       Reevaluation
+

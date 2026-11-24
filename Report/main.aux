@@ -8,30 +8,107 @@
 \providecommand \oddpage@label [2]{}
 \babel@aux{english}{}
 \pgfsyspdfmark {pgfid1}{6577079}{49131591}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Project Background}{2}{subsection.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Motivation}{2}{subsection.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Project Challenges}{2}{subsection.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Project Objectives}{2}{subsection.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Development Approach}{3}{subsection.1.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{3}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Time-Loop and Time-Manipulation Games}{3}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Puzzle Game Design}{4}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Action Recording and Replay}{4}{subsection.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}State Management}{4}{subsection.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Level Representation and Creation}{4}{subsection.2.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Comparison with the Proposed Game}{4}{subsection.2.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Implementation}{5}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overall Game Architecture}{5}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Gameplay System}{5}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Action Recording System}{6}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Ghost Replay System}{6}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Room Reset and State Management}{6}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Puzzle Interaction System}{6}{subsection.3.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Level Data and Level Loading}{7}{subsection.3.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Level Creation Tool}{7}{subsection.3.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Puzzle and Level Design}{7}{subsection.3.9}\protected@file@percent }
-\newlabel{LastPage}{{3.9}{8}{Puzzle and Level Design}{page.8}{}}
-\gdef\lastpage@lastpage{8}
-\gdef\lastpage@lastpageHy{8}
-\gdef \@abspage@last{9}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Project Background}{3}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.1.1}ChronoWalk as a Research and Engineering Problem}{3}{subsubsection.1.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.1.2}Position within Puzzle-Game Research}{3}{subsubsection.1.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.1.3}Project Scope}{3}{subsubsection.1.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Motivation}{4}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.1}Why a Limited Turn Allowance Is Useful}{4}{subsubsection.1.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.2}Why Replayable Actors Improve the Puzzle}{4}{subsubsection.1.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.3}Expected Player Experience}{4}{subsubsection.1.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Project Challenges}{4}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.1}Replay Consistency}{5}{subsubsection.1.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.3.1.a}Replay Failure and Feedback}{5}{subsubsubsection.1.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.3.1.b}Actor and Object Synchronization}{5}{subsubsubsection.1.3.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.2}Room-State Restoration}{5}{subsubsection.1.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.3}Level-Authoring Reliability}{5}{subsubsection.1.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.4}Human Factors and Presentation}{5}{subsubsection.1.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Project Objectives}{5}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.4.0.a}Gameplay Objectives}{6}{subsubsubsection.1.4.0.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.4.0.b}Technical Objectives}{6}{subsubsubsection.1.4.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.4.0.c}Quality and Evaluation Objectives}{6}{subsubsubsection.1.4.0.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.4.1}Expected Deliverables}{6}{subsubsection.1.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Development and Evaluation Scope}{6}{subsection.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.1}Development Phases}{6}{subsubsection.1.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.2}Testing Scope}{7}{subsubsection.1.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.3}Technical Risks}{7}{subsubsection.1.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.5.4}Scope Boundaries}{7}{subsubsection.1.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.6}Development Approach}{7}{subsection.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.6.0.a}Rule-First Development}{7}{subsubsubsection.1.6.0.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.6.0.b}Iterative Room Construction}{7}{subsubsubsection.1.6.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.6.0.c}Incremental Verification}{8}{subsubsubsection.1.6.0.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {1.6.0.d}Design and Implementation Traceability}{8}{subsubsubsection.1.6.0.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.7}Report Organization}{8}{subsection.1.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{8}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Time-Loop and Time-Manipulation Games}{8}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Puzzle Game Design}{9}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Action Recording and Replay}{9}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}State Management}{9}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Level Representation and Creation}{9}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Comparison with the Proposed Game}{9}{subsection.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Problem, Gameplay, and System Design}{10}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overall Game Architecture}{10}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Gameplay System}{10}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Action Recording System}{11}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Ghost Replay System}{11}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Room Reset and State Management}{11}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Puzzle Interaction System}{12}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Level Data and Level Loading}{12}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Level Creation Tool}{12}{subsection.3.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Puzzle and Level Design}{13}{subsection.3.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Implementation, Results, and Evaluation}{15}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Implementation}{15}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Development Environment}{15}{subsubsection.4.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Overall Game Architecture}{15}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.3}Gameplay Implementation}{15}{subsubsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.4}Action Recording Implementation}{15}{subsubsection.4.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.5}Ghost Replay Implementation}{15}{subsubsection.4.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.6}Room Reset Implementation}{15}{subsubsection.4.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.7}Puzzle Interaction Implementation}{15}{subsubsection.4.1.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.8}Boxes}{15}{subsubsection.4.1.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.9}Doors}{15}{subsubsection.4.1.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.10}Lasers and Hazards}{15}{subsubsection.4.1.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.11}Traps and Other Mechanisms}{15}{subsubsection.4.1.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.12}Level Data and Loading}{15}{subsubsection.4.1.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.13}Level Creation Tool}{15}{subsubsection.4.1.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.14}User Interface Implementation}{15}{subsubsection.4.1.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Implementation Results}{15}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Completed Features}{15}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Prototype Screens and Figures}{15}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Technical Results}{15}{subsubsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Testing and Evaluation}{15}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Prototype Deployment}{15}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Testing Strategy}{15}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Unit and Component Testing}{15}{subsubsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {4.3.3.a}Turn-System Testing}{15}{subsubsubsection.4.3.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {4.3.3.b}State and Reset Testing}{15}{subsubsubsection.4.3.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {4.3.3.c}Interaction Testing}{15}{subsubsubsection.4.3.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {4.3.3.d}Editor and Level-Loading Testing}{15}{subsubsubsection.4.3.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.4}System and Integration Testing}{15}{subsubsection.4.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {4.3.4.a}Gameplay Testing}{15}{subsubsubsection.4.3.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {4.3.4.b}Usability Testing}{15}{subsubsubsection.4.3.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsubsection}{\numberline {4.3.4.c}Technical Testing}{15}{subsubsubsection.4.3.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.5}Compatibility Testing}{15}{subsubsection.4.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Evaluation}{15}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Gameplay Evaluation}{15}{subsubsection.4.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Technical Evaluation}{15}{subsubsection.4.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.3}Usability and Replay Clarity}{15}{subsubsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.4}Maintainability and Extensibility}{15}{subsubsection.4.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.5}Limitations and Defects}{15}{subsubsection.4.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Reevaluation}{15}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}Required Corrections}{15}{subsubsection.4.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.2}Priority Improvements}{15}{subsubsection.4.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{15}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Project Summary}{15}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Achieved Objectives}{15}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Uncompleted Objectives}{15}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Lessons Learned}{15}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Technical Lessons}{15}{subsubsection.5.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Gameplay Lessons}{15}{subsubsection.5.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Process Lessons}{15}{subsubsection.5.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Future Development}{15}{subsection.5.5}\protected@file@percent }
+\newlabel{LastPage}{{5.5}{15}{Future Development}{page.15}{}}
+\gdef\lastpage@lastpage{15}
+\gdef\lastpage@lastpageHy{15}
+\gdef \@abspage@last{16}
