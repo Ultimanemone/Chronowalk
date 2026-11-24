@@ -1,3 +1,4 @@
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.PlayerEntities;
 using ChronowalkGame.Game.Stage;
 using ChronowalkGame.Game.Stage.Data;
@@ -33,6 +34,7 @@ namespace ChronowalkGame.Editor
         private ToolMode toolMode;
         private PlacementLayer placementLayer;
         private Direction placementDirection;
+        private bool newObjectHasDirection;
         private int selectedPlacementIndex = -1;
         private bool editMode = true;
         private Vector2 paletteScroll;
@@ -165,6 +167,12 @@ namespace ChronowalkGame.Editor
             toolMode = (ToolMode)GUILayout.Toolbar((int)toolMode, new[] { "Place", "Select" });
             using (new EditorGUI.DisabledScope(toolMode != ToolMode.Place))
                 placementDirection = (Direction)EditorGUILayout.EnumPopup("New Placement Direction", placementDirection);
+            if (placementLayer == PlacementLayer.Object &&
+                selectedDefinition is StageObjectDefinition)
+            {
+                using (new EditorGUI.DisabledScope(toolMode != ToolMode.Place))
+                    newObjectHasDirection = EditorGUILayout.Toggle("New Object Has Direction", newObjectHasDirection);
+            }
 
             EditorGUILayout.HelpBox(
                 "Choose Tile Placement or Object Placement before using the palette. " +
@@ -226,8 +234,12 @@ namespace ChronowalkGame.Editor
                 Texture icon = definition.Sprite != null ? definition.Sprite.texture : null;
                 GUIContent content = new GUIContent(definition.name, icon);
                 bool selected = selectedDefinition == definition;
-                if (GUILayout.Toggle(selected, content, "Button", GUILayout.Height(28)))
+                if (GUILayout.Toggle(selected, content, "Button", GUILayout.Height(28)) && !selected)
+                {
                     selectedDefinition = definition;
+                    if (definition is StageObjectDefinition objectDefinition)
+                        newObjectHasDirection = HasDirectionByDefault(objectDefinition);
+                }
             }
             if (!foundMatch)
                 EditorGUILayout.HelpBox(
@@ -251,9 +263,17 @@ namespace ChronowalkGame.Editor
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.ObjectField("Definition", placement.Definition, typeof(StageElement), false);
             placement.Position = EditorGUILayout.Vector2IntField("Position", placement.Position);
-            placement.Direction = (Direction)EditorGUILayout.EnumPopup("Direction", placement.Direction);
             if (placement.Definition is StageObjectDefinition)
+            {
+                placement.HasDirection = EditorGUILayout.Toggle("Has Direction", placement.HasDirection);
+                if (placement.HasDirection)
+                    placement.Direction = (Direction)EditorGUILayout.EnumPopup("Direction", placement.Direction);
                 placement.CanBePushed = EditorGUILayout.Toggle("Can Be Pushed", placement.CanBePushed);
+            }
+            else
+            {
+                placement.Direction = (Direction)EditorGUILayout.EnumPopup("Direction", placement.Direction);
+            }
             if (EditorGUI.EndChangeCheck())
             {
                 MarkLevelDirty();
@@ -462,12 +482,15 @@ namespace ChronowalkGame.Editor
                 bool isObject = placement.Definition is StageObjectDefinition;
                 Color previousColor = Handles.color;
                 Handles.color = i == selectedPlacementIndex ? Color.yellow : Color.white;
-                Handles.ArrowHandleCap(
-                    0,
-                    center + Vector3.back * (isObject ? 0.12f : 0.05f),
-                    Quaternion.LookRotation(Vector3.forward, direction),
-                    0.35f,
-                    EventType.Repaint);
+                if (!isObject || placement.HasDirection)
+                {
+                    Handles.ArrowHandleCap(
+                        0,
+                        center + Vector3.back * (isObject ? 0.12f : 0.05f),
+                        Quaternion.LookRotation(Vector3.forward, direction),
+                        0.35f,
+                        EventType.Repaint);
+                }
                 Handles.Label(
                     center + Vector3.up * (isObject ? 0.56f : 0.32f),
                     GetLabel(placement.Definition),
@@ -548,6 +571,7 @@ namespace ChronowalkGame.Editor
                 Definition = selectedDefinition,
                 Position = cell,
                 Direction = placementDirection,
+                HasDirection = !(selectedDefinition is StageObjectDefinition) || newObjectHasDirection,
                 CanBePushed = true
             };
 
@@ -574,6 +598,7 @@ namespace ChronowalkGame.Editor
                 ObjectData placement = level.Placements[selectedPlacementIndex];
                 selectedDefinition = placement.Definition;
                 placementDirection = placement.Direction;
+                newObjectHasDirection = placement.HasDirection;
             }
         }
 
@@ -671,8 +696,14 @@ namespace ChronowalkGame.Editor
                 if (placement.Definition is StageObjectDefinition)
                     position.z -= 0.1f;
                 instance.transform.position = position;
-                instance.transform.rotation = DirectionRotation(placement.Direction);
+                if (!(placement.Definition is StageObjectDefinition) || placement.HasDirection)
+                    instance.transform.rotation = DirectionRotation(placement.Direction);
             }
+        }
+
+        private static bool HasDirectionByDefault(StageObjectDefinition definition)
+        {
+            return definition.ObjectType != RoomObjectType.Box;
         }
 
         private GameObject CreatePreviewObject(StageElement definition)

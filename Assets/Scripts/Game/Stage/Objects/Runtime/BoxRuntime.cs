@@ -3,7 +3,7 @@ using ChronowalkGame.Game.Stage.Contracts;
 
 namespace ChronowalkGame.Game.Stage.Objects.Runtime
 {
-    public class BoxRuntime : MonoBehaviour, IStateful
+    public class BoxRuntime : MonoBehaviour, IStateful, IRuntimeInitializable<Transform>
     {
         private const int TurretHitsToBreak = 2;
 
@@ -12,7 +12,7 @@ namespace ChronowalkGame.Game.Stage.Objects.Runtime
 
         public int TurretHitsRemaining => turretHitsRemaining;
 
-        public void Configure(Transform root)
+        public void Initialize(Transform root)
         {
             tileRoot = root != null ? root : transform;
             turretHitsRemaining = TurretHitsToBreak;

@@ -1,3 +1,4 @@
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.PlayerEntities;
 using System;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace ChronowalkGame.Game.Stage.Data
         public StageElement Definition;
         public Vector2Int Position;
         public Direction Direction;
+        public bool HasDirection = true;
         public bool CanBePushed = true;
     }
 }

@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.PlayerEntities;
 using ChronowalkGame.Game.Stage.Contracts;
 using ChronowalkGame.Game.Stage.Data;
@@ -21,6 +23,7 @@ namespace ChronowalkGame.Game.Stage
             AwaitingAction,
             ResolvingTurn,
             TransitioningLoop,
+            Resetting,
             Completed,
             Error
         }
@@ -41,6 +44,7 @@ namespace ChronowalkGame.Game.Stage
         private int turnsUsed;
         private bool loopEndRequested;
         private string pendingLoopEndReason;
+        private Coroutine turnResolution;
 
         public StageState State { get; private set; } = StageState.NotInitialized;
         public int TurnsUsed => turnsUsed;
@@ -112,7 +116,8 @@ namespace ChronowalkGame.Game.Stage
                 instance.transform.position = gridManager.CellToWorld(placement.Position);
                 if (placement.Definition is StageObjectDefinition)
                     instance.transform.position += Vector3.back * 0.1f;
-                instance.transform.rotation = DirectionUtility.ToRotation(placement.Direction);
+                if (!(placement.Definition is StageObjectDefinition) || placement.HasDirection)
+                    instance.transform.rotation = DirectionUtils.ToRotation(placement.Direction);
 
                 if (placement.Definition is StageTileDefinition tileDefinition)
                 {
@@ -122,7 +127,12 @@ namespace ChronowalkGame.Game.Stage
                 else if (placement.Definition is StageObjectDefinition objectDefinition)
                 {
                     gridManager.AddRoomObject(instance);
-                    ConfigureRoomObjectRuntime(instance, objectDefinition, placement.Direction, placement.CanBePushed);
+                    InitializeRoomObjectRuntime(
+                        instance,
+                        objectDefinition,
+                        placement.Direction,
+                        placement.HasDirection,
+                        placement.CanBePushed);
                 }
 
                 foreach (MonoBehaviour behaviour in instance.GetComponentsInChildren<MonoBehaviour>(true))
@@ -155,42 +165,62 @@ namespace ChronowalkGame.Game.Stage
                 return false;
 
             if ((action.Type == ActionType.Move || action.Type == ActionType.Interact) &&
-                !DirectionUtility.TryGetDirection(action.Direction, out _))
+                !DirectionUtils.TryGetDirection(action.Direction, out _))
                 return false;
 
             if (action.Type == ActionType.Move &&
                 !RoomActionResolver.CanMove(action.Direction, player.transform, gridManager))
                 return false;
 
-            SetState(StageState.ResolvingTurn);
-            loopEndRequested = false;
-            pendingLoopEndReason = null;
-
-            int turnIndex = turnsUsed;
-            if (!ReplayGhosts(turnIndex))
+            if (!AreGhostsReady(turnsUsed))
             {
                 SetState(StageState.Error);
                 return false;
             }
 
+            SetState(StageState.ResolvingTurn);
+            loopEndRequested = false;
+            pendingLoopEndReason = null;
             currentLoopActions.Add(action);
-            player.Act(action);
+            turnResolution = StartCoroutine(ResolveTurn(action, turnsUsed));
+            return true;
+        }
+
+        private IEnumerator ResolveTurn(PlayerAction action, int turnIndex)
+        {
+            yield return player.PlayAction(action, gridManager);
+            if (State != StageState.ResolvingTurn)
+                yield break;
+
+            for (int i = 0; i < ghosts.Count; i++)
+            {
+                yield return ghosts[i].ReplayTurn(turnIndex);
+                if (State != StageState.ResolvingTurn)
+                    yield break;
+            }
 
             int turnNumber = turnsUsed + 1;
             for (int i = 0; i < turnSystems.Count; i++)
                 turnSystems[i].ResolveTurn(turnNumber);
 
+            ResolveActorHazards();
             turnsUsed++;
             MoveCountChanged?.Invoke(turnsUsed, TurnLimit);
 
             if (State == StageState.Completed)
-                return true;
+            {
+                player.ShowIdleAnimation();
+                turnResolution = null;
+                yield break;
+            }
 
             Vector2Int playerCell = gridManager.WorldToCell(player.transform.position);
             if (player.IsAlive && gridManager.IsType(TileType.Exit, playerCell))
             {
+                player.ShowIdleAnimation();
                 CompleteLevel();
-                return true;
+                turnResolution = null;
+                yield break;
             }
 
             if (!loopEndRequested && turnsUsed >= TurnLimit)
@@ -201,12 +231,14 @@ namespace ChronowalkGame.Game.Stage
 
             if (loopEndRequested)
             {
-                FinishCurrentLoop(pendingLoopEndReason);
-                return true;
+                yield return FinishCurrentLoop(pendingLoopEndReason);
+                turnResolution = null;
+                yield break;
             }
 
+            player.ShowIdleAnimation();
             SetState(StageState.AwaitingAction);
-            return true;
+            turnResolution = null;
         }
 
         public bool EndCurrentLoop()
@@ -221,7 +253,7 @@ namespace ChronowalkGame.Game.Stage
             if (State != StageState.AwaitingAction)
                 return false;
 
-            FinishCurrentLoop("Manually ended");
+            StartCoroutine(FinishCurrentLoop("Manually ended"));
             return true;
         }
 
@@ -234,19 +266,19 @@ namespace ChronowalkGame.Game.Stage
             }
             else if (State == StageState.AwaitingAction)
             {
-                FinishCurrentLoop("Player died");
+                StartCoroutine(FinishCurrentLoop("Player died"));
             }
         }
 
         public bool RestartCurrentLoop()
         {
-            if (State != StageState.AwaitingAction && State != StageState.Completed)
+            if (State != StageState.AwaitingAction &&
+                State != StageState.ResolvingTurn &&
+                State != StageState.Completed)
                 return false;
 
-            ResetToLoopStart();
             LastLoopEndReason = "Current loop restarted";
-            SetState(StageState.AwaitingAction);
-            NotifyCountersChanged();
+            BeginLoopReset();
             return true;
         }
 
@@ -256,23 +288,23 @@ namespace ChronowalkGame.Game.Stage
                 return false;
 
             completedLoops.RemoveAt(completedLoops.Count - 1);
-            ResetToLoopStart();
             LastLoopEndReason = "Most recent loop erased";
-            NotifyCountersChanged();
+            BeginLoopReset();
             return true;
         }
 
         public bool RestartLevel()
         {
-            if (State != StageState.AwaitingAction && State != StageState.Completed)
+            if (State != StageState.AwaitingAction &&
+                State != StageState.ResolvingTurn &&
+                State != StageState.Completed)
                 return false;
 
+            CancelTurnResolution();
             completedLoops.Clear();
             currentLoopActions.Clear();
-            ResetToLoopStart();
             LastLoopEndReason = "Level restarted";
-            SetState(StageState.AwaitingAction);
-            NotifyCountersChanged();
+            BeginLoopReset();
             AdvLogger.Log("Level restarted");
             return true;
         }
@@ -372,10 +404,11 @@ namespace ChronowalkGame.Game.Stage
             }
         }
 
-        private void ConfigureRoomObjectRuntime(
+        private void InitializeRoomObjectRuntime(
             GameObject instance,
             StageObjectDefinition definition,
             Direction direction,
+            bool hasDirection,
             bool canBePushed)
         {
             if (definition.ObjectType == RoomObjectType.Box &&
@@ -389,41 +422,72 @@ namespace ChronowalkGame.Game.Stage
             StageObjectRuntime objectRuntime = instance.GetComponentInChildren<StageObjectRuntime>(true);
             if (objectRuntime == null)
                 objectRuntime = instance.AddComponent<StageObjectRuntime>();
-            objectRuntime.Configure(definition, instance.transform, canBePushed);
+            objectRuntime.Initialize(new StageObjectRuntime.InitializationData(
+                definition,
+                instance.transform,
+                canBePushed,
+                hasDirection,
+                direction));
 
             switch (definition.ObjectType)
             {
                 case RoomObjectType.Box:
-                    instance.GetComponentInChildren<BoxRuntime>(true).Configure(instance.transform);
+                    instance.GetComponentInChildren<BoxRuntime>(true).Initialize(instance.transform);
                     break;
                 case RoomObjectType.Laser:
-                    instance.GetComponentInChildren<LaserRuntime>(true).Configure(direction);
+                    Vector2Int beamDirection = hasDirection
+                        ? DirectionUtils.ToVector(direction)
+                        : Vector2Int.zero;
+                    instance.GetComponentInChildren<LaserRuntime>(true).Initialize(beamDirection);
                     break;
             }
         }
 
-        private void FinishCurrentLoop(string reason)
+        private IEnumerator FinishCurrentLoop(string reason)
         {
             completedLoops.Add(new LoopActionLog(currentLoopActions));
-
-            SetState(StageState.TransitioningLoop);
             LastLoopEndReason = reason;
-            ResetToLoopStart();
-            NotifyCountersChanged();
-            SetState(StageState.AwaitingAction);
+            yield return ResetToLoopStart();
         }
 
-        private void ResetToLoopStart()
+        private void BeginLoopReset()
         {
+            CancelTurnResolution();
+            StartCoroutine(ResetToLoopStart());
+        }
+
+        private IEnumerator ResetToLoopStart()
+        {
+            SetState(StageState.Resetting);
+            Vector3 positionBeforeReset = player.transform.position;
+            player.InterruptAnimation();
             ClearGhosts();
             for (int i = 0; i < roomSnapshot.Count; i++)
                 roomSnapshot[i].Restore();
+
+            Vector3 resetDestination = player.transform.position;
+            player.transform.position = positionBeforeReset;
+            Vector3 displacement = resetDestination - positionBeforeReset;
+            Vector2Int directionVector = Mathf.Abs(displacement.x) >= Mathf.Abs(displacement.y)
+                ? new Vector2Int((int)Mathf.Sign(displacement.x), 0)
+                : new Vector2Int(0, (int)Mathf.Sign(displacement.y));
+            Direction resetDirection = player.Facing;
+            if (directionVector != Vector2Int.zero)
+                DirectionUtils.TryGetDirection(directionVector, out resetDirection);
 
             currentLoopActions.Clear();
             turnsUsed = 0;
             loopEndRequested = false;
             pendingLoopEndReason = null;
+
+            if (displacement.sqrMagnitude > Mathf.Epsilon)
+                yield return player.AnimateResetTo(resetDestination, resetDirection);
+            else
+                player.ShowIdleAnimation();
+
             SpawnGhosts();
+            SetState(StageState.AwaitingAction);
+            NotifyCountersChanged();
         }
 
         private void CaptureRoomSnapshot()
@@ -445,7 +509,7 @@ namespace ChronowalkGame.Game.Stage
             roomSnapshot.Add(new RoomObjectSnapshot(root));
         }
 
-        private bool ReplayGhosts(int turnIndex)
+        private bool AreGhostsReady(int turnIndex)
         {
             for (int i = 0; i < ghosts.Count; i++)
             {
@@ -458,10 +522,38 @@ namespace ChronowalkGame.Game.Stage
                 }
             }
 
-            for (int i = 0; i < ghosts.Count; i++)
-                ghosts[i].ReplayTurn(turnIndex);
-
             return true;
+        }
+
+        private void ResolveActorHazards()
+        {
+            if (player.IsAlive)
+            {
+                Vector2Int playerCell = gridManager.WorldToCell(player.transform.position);
+                if (gridManager.IsHazard(playerCell) || gridManager.IsLaserHazard(playerCell))
+                    player.Die();
+            }
+
+            for (int i = 0; i < ghosts.Count; i++)
+            {
+                Ghost ghost = ghosts[i];
+                if (!ghost.IsAlive)
+                    continue;
+
+                Vector2Int ghostCell = gridManager.WorldToCell(ghost.transform.position);
+                if (gridManager.IsHazard(ghostCell) || gridManager.IsLaserHazard(ghostCell))
+                    ghost.Die();
+            }
+        }
+
+        private void CancelTurnResolution()
+        {
+            if (turnResolution == null)
+                return;
+
+            Coroutine activeResolution = turnResolution;
+            turnResolution = null;
+            StopCoroutine(activeResolution);
         }
 
         private void SpawnGhosts()

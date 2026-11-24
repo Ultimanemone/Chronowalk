@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.PlayerEntities;
 using ChronowalkGame.Game.Stage.Data;
 using UnityEngine;

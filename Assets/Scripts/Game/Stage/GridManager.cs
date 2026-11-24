@@ -211,24 +211,47 @@ namespace ChronowalkGame.Game.Stage
                 if (laser == null)
                     continue;
 
-                Vector2Int direction = laser.BeamDirection;
-                if (direction == Vector2Int.zero)
-                    continue;
-
-                Vector2Int beamCell = WorldToCell(runtimeObject.transform.position) + direction;
-                while (IsWithinBounds(beamCell))
-                {
-                    if (BlocksLaser(beamCell))
-                        break;
-
-                    if (beamCell == cell)
-                        return true;
-
-                    beamCell += direction;
-                }
+                TraceLaserBeam(runtimeObject.transform.position, laser.BeamDirection, cell, out bool reachesCell);
+                if (reachesCell)
+                    return true;
             }
 
             return false;
+        }
+
+        public int GetLaserBeamLength(Vector3 sourcePosition, Vector2Int direction)
+        {
+            return TraceLaserBeam(sourcePosition, direction, null, out _);
+        }
+
+        private int TraceLaserBeam(
+            Vector3 sourcePosition,
+            Vector2Int direction,
+            Vector2Int? targetCell,
+            out bool reachesTarget)
+        {
+            reachesTarget = false;
+            if (direction == Vector2Int.zero)
+                return 0;
+
+            int beamLength = 0;
+            Vector2Int beamCell = WorldToCell(sourcePosition) + direction;
+            while (IsWithinBounds(beamCell))
+            {
+                if (BlocksLaser(beamCell))
+                    break;
+
+                beamLength++;
+                if (targetCell.HasValue && beamCell == targetCell.Value)
+                {
+                    reachesTarget = true;
+                    break;
+                }
+
+                beamCell += direction;
+            }
+
+            return beamLength;
         }
 
         private bool BlocksLaser(Vector2Int cell)

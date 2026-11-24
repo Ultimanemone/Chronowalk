@@ -1,4 +1,6 @@
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.PlayerEntities;
+using ChronowalkGame.UI;
 using ChronowalkGame.Utils.Logger;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,6 +16,7 @@ namespace ChronowalkGame.Game.Stage
         [SerializeField] private InputActionReference eraseLoopKey;
         [SerializeField] private InputActionReference restartLoopKey;
         [SerializeField] private InputActionReference restartLevelKey;
+        [SerializeField] private InputActionReference zoomKey;
 
         private void OnEnable()
         {
@@ -76,12 +79,18 @@ namespace ChronowalkGame.Game.Stage
             if (WasPressed(interactKey))
             {
                 Vector2Int direction = Player.Instance != null
-                    ? DirectionUtility.ToVector(Player.Instance.Facing)
+                    ? DirectionUtils.ToVector(Player.Instance.Facing)
                     : Vector2Int.up;
                 stage.TrySubmitAction(ActionType.Interact, direction);
             }
-        }
 
+            if (Mouse.current.scroll.y.ReadValue() != 0)
+            {
+                float sign = Mathf.Sign(Mouse.current.scroll.y.ReadValue());
+                PlayerCamera.Instance.Zoom(-sign);
+            }
+        }
+            
         private void SetActionsEnabled(bool enabled)
         {
             SetActionEnabled(moveKeys, enabled);

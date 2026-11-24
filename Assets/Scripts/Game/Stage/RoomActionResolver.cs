@@ -1,6 +1,7 @@
 using System;
-using ChronowalkGame.Game.Stage.Contracts;
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.PlayerEntities;
+using ChronowalkGame.Game.Stage.Contracts;
 using UnityEngine;
 
 namespace ChronowalkGame.Game.Stage
@@ -9,7 +10,7 @@ namespace ChronowalkGame.Game.Stage
     {
         public static bool CanMove(Vector2Int direction, Transform actor, GridManager grid)
         {
-            if (actor == null || grid == null || !DirectionUtility.TryGetDirection(direction, out _))
+            if (actor == null || grid == null || !DirectionUtils.TryGetDirection(direction, out _))
                 return false;
 
             Vector2Int targetCell = grid.WorldToCell(actor.position) + direction;
@@ -22,40 +23,38 @@ namespace ChronowalkGame.Game.Stage
             return grid.IsWalkable(targetCell, actor);
         }
 
-        public static void Resolve(
+        public static bool ApplyAction(
             PlayerAction action,
             Transform actor,
             GridManager grid,
             Action<Direction> setFacing,
-            Action onHazardEntered)
+            out Vector3 moveDestination)
         {
+            moveDestination = actor != null ? actor.position : Vector3.zero;
             if (actor == null || grid == null || setFacing == null)
-                return;
+                return false;
 
             if (action.Type == ActionType.Move)
             {
-                if (!DirectionUtility.TryGetDirection(action.Direction, out Direction direction))
-                    return;
-                if (!CanMove(action.Direction, actor, grid))
-                    return;
+                if (!DirectionUtils.TryGetDirection(action.Direction, out Direction direction) ||
+                    !CanMove(action.Direction, actor, grid))
+                    return false;
 
                 setFacing(direction);
                 Vector2Int targetCell = grid.WorldToCell(actor.position) + action.Direction;
-                if (grid.TryGetPushable(targetCell, out IPushable pushable))
-                {
-                    if (!pushable.TryPush(action.Direction, actor, grid))
-                        return;
-                }
+                if (grid.TryGetPushable(targetCell, out IPushable pushable) &&
+                    !pushable.TryPush(action.Direction, actor, grid))
+                    return false;
 
-                actor.position = grid.CellToWorld(targetCell);
-
-                if (grid.IsHazard(targetCell))
-                    onHazardEntered?.Invoke();
+                moveDestination = grid.CellToWorld(targetCell);
+                moveDestination.z = actor.position.z;
+                return true;
             }
-            else if (action.Type == ActionType.Interact)
+
+            if (action.Type == ActionType.Interact)
             {
-                if (!DirectionUtility.TryGetDirection(action.Direction, out Direction direction))
-                    return;
+                if (!DirectionUtils.TryGetDirection(action.Direction, out Direction direction))
+                    return false;
 
                 setFacing(direction);
                 Vector2Int targetCell = grid.WorldToCell(actor.position) + action.Direction;
@@ -71,8 +70,7 @@ namespace ChronowalkGame.Game.Stage
                     InteractWith(tileTarget, actor);
             }
 
-            if (actor != null && grid.IsLaserHazard(grid.WorldToCell(actor.position)))
-                onHazardEntered?.Invoke();
+            return action.Type == ActionType.Interact || action.Type == ActionType.Wait;
         }
 
         private static void InteractWith(GameObject target, Transform actor)

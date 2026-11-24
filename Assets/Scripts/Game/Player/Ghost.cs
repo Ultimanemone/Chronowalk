@@ -1,3 +1,5 @@
+using System.Collections;
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.Stage;
 using UnityEngine;
 
@@ -7,6 +9,8 @@ namespace ChronowalkGame.Game.PlayerEntities
     {
         private LoopActionLog actionLog;
         private GridManager grid;
+        private ActorAnimation actorAnimation;
+        private Direction facing;
         private int nextTurnIndex;
 
         public int LoopNumber { get; private set; }
@@ -38,39 +42,45 @@ namespace ChronowalkGame.Game.PlayerEntities
             grid = stageGrid;
             nextTurnIndex = 0;
             IsAlive = true;
+            actorAnimation = GetComponentInChildren<ActorAnimation>(true);
+            if (actorAnimation == null)
+                actorAnimation = gameObject.AddComponent<ActorAnimation>();
+            actorAnimation.Configure(transform);
             gameObject.SetActive(true);
             transform.position = grid.CellToWorld(spawnCell);
             SetFacing(initialDirection);
+            actorAnimation.SetIdle(initialDirection);
         }
 
-        public bool ReplayTurn(int turnIndex)
+        public IEnumerator ReplayTurn(int turnIndex)
         {
             if (!IsReadyForTurn(turnIndex))
-                return false;
+                yield break;
 
             nextTurnIndex++;
             if (!IsAlive || actionLog == null || turnIndex >= actionLog.Actions.Count)
-                return true;
+                yield break;
 
             PlayerAction action = actionLog.Actions[turnIndex];
-            RoomActionResolver.Resolve(
-                action,
-                transform,
-                grid,
-                SetFacing,
-                Die);
-            return true;
+            if (!RoomActionResolver.ApplyAction(action, transform, grid, SetFacing, out Vector3 destination))
+                yield break;
+
+            if (action.Type == ActionType.Move)
+                yield return actorAnimation.MoveTo(destination, facing);
+
+            actorAnimation.SetIdle(facing);
         }
 
         private void SetFacing(Direction direction)
         {
-            transform.rotation = DirectionUtility.ToRotation(direction);
+            facing = direction;
         }
 
-        private void Die()
+        public void Die()
         {
             IsAlive = false;
             gameObject.SetActive(false);
         }
+
     }
 }

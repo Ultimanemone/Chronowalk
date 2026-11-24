@@ -1,3 +1,5 @@
+using System.Collections;
+using ChronowalkGame.Game.Data;
 using ChronowalkGame.Game.Stage;
 using ChronowalkGame.Game.Stage.Contracts;
 using ChronowalkGame.Utils;
@@ -9,34 +11,38 @@ namespace ChronowalkGame.Game.PlayerEntities
     public class Player : MonoSingleton<Player>, IStateful
     {
         [SerializeField] private Direction facing = Direction.Up;
+        private ActorAnimation actorAnimation;
 
         public Direction Facing => facing;
         public bool IsAlive { get; private set; } = true;
 
-        public void Act(PlayerAction action)
+        protected override void Awake()
+        {
+            base.Awake();
+            actorAnimation = GetComponentInChildren<ActorAnimation>(true);
+            if (actorAnimation == null)
+                Debug.LogError("Player requires an ActorAnimation component on its Animator object.", this);
+            else
+                actorAnimation.Configure(transform);
+        }
+
+        public IEnumerator PlayAction(PlayerAction action, GridManager grid)
         {
             if (!IsAlive)
-                return;
+                yield break;
 
-            switch (action.Type)
+            if (!RoomActionResolver.ApplyAction(action, transform, grid, SetFacing, out Vector3 destination))
+                yield break;
+
+            if (action.Type == ActionType.Move)
             {
-                case ActionType.Move:
-                    Move(action.Direction);
-                    break;
-                case ActionType.Interact:
-                    Interact(action.Direction);
-                    break;
-                case ActionType.Wait:
-                    ResolveAction(action);
-                    break;
+                if (actorAnimation != null)
+                    yield return actorAnimation.MoveTo(destination, facing);
+                else
+                    transform.position = destination;
             }
 
             AdvLogger.Log(action.ToString());
-        }
-
-        public void Act(ActionType type, Vector2Int direction)
-        {
-            Act(new PlayerAction(type, direction));
         }
 
         public bool CanMoveTo(Vector2Int cell)
@@ -52,6 +58,7 @@ namespace ChronowalkGame.Game.PlayerEntities
             transform.position = GridManager.Instance.CellToWorld(cell);
             SetFacing(direction);
             IsAlive = true;
+            ShowIdleAnimation();
         }
 
         public void Die()
@@ -78,33 +85,29 @@ namespace ChronowalkGame.Game.PlayerEntities
             IsAlive = playerState.IsAlive;
         }
 
-        private void Move(Vector2Int direction)
+        public void ShowIdleAnimation()
         {
-            ResolveAction(new PlayerAction(ActionType.Move, direction));
+            actorAnimation?.SetIdle(facing);
         }
 
-        private void Interact(Vector2Int direction)
+        public void InterruptAnimation()
         {
-            ResolveAction(new PlayerAction(ActionType.Interact, direction));
+            actorAnimation?.Interrupt(facing);
         }
 
-        private void ResolveAction(PlayerAction action)
+        public IEnumerator AnimateResetTo(Vector3 destination, Direction direction)
         {
-            if (GridManager.Instance == null)
-                return;
+            if (actorAnimation != null)
+                yield return actorAnimation.MoveTo(destination, direction);
+            else
+                transform.position = destination;
 
-            RoomActionResolver.Resolve(
-                action,
-                transform,
-                GridManager.Instance,
-                SetFacing,
-                Die);
+            ShowIdleAnimation();
         }
 
         private void SetFacing(Direction direction)
         {
             facing = direction;
-            transform.rotation = DirectionUtility.ToRotation(direction);
         }
 
         private sealed class PlayerState
